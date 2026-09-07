@@ -6,22 +6,33 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
@@ -33,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
@@ -52,6 +64,8 @@ import shiguangschedule.shared.generated.resources.Res
 import shiguangschedule.shared.generated.resources.action_cancel
 import shiguangschedule.shared.generated.resources.action_confirm
 import shiguangschedule.shared.generated.resources.chevron_right_24px
+import shiguangschedule.shared.generated.resources.person_24px
+import shiguangschedule.shared.generated.resources.refresh_24px
 import shiguangschedule.shared.generated.resources.date_format_year_month_day
 import shiguangschedule.shared.generated.resources.day_of_week_monday
 import shiguangschedule.shared.generated.resources.day_of_week_sunday
@@ -108,6 +122,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val isSyncing by viewModel.isSyncing.collectAsState()
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
 
@@ -154,6 +169,7 @@ fun SettingsScreen(
                 var showManualWeekDialog by remember { mutableStateOf(false) }
                 var showDatePickerModal by remember { mutableStateOf(false) }
                 var showFirstDayOfWeekDialog by remember { mutableStateOf(false) }
+                var showLogoutConfirmDialog by remember { mutableStateOf(false) }
 
                 LazyColumn(
                     modifier = Modifier
@@ -166,6 +182,19 @@ fun SettingsScreen(
                         bottom = navPadding.calculateBottomPadding()
                     )
                 ) {
+                    item {
+                        AccountSettingsSection(
+                            studentId = appSettings.cqustStudentId,
+                            isLoggedIn = appSettings.cqustIsLoggedIn,
+                            isSyncing = isSyncing,
+                            onSyncClick = {
+                                viewModel.reSyncCqustCourses(
+                                    onNeedLogin = { onNavigate(Destination.CqustLogin) }
+                                )
+                            },
+                            onLogoutClick = { showLogoutConfirmDialog = true }
+                        )
+                    }
                     item {
                         GeneralSettingsSection(
                             showNonCurrentWeek = appSettings.showNonCurrentWeekCourses,
@@ -193,6 +222,31 @@ fun SettingsScreen(
                     item {
                         AdvancedSettingsSection(onNavigate = onNavigate)
                     }
+                }
+
+                if (showLogoutConfirmDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showLogoutConfirmDialog = false },
+                        title = { Text("退出登录") },
+                        text = { Text("确定退出当前教务系统账号吗？") },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    showLogoutConfirmDialog = false
+                                    viewModel.logoutCqust {
+                                        onNavigate(Destination.CqustLogin)
+                                    }
+                                }
+                            ) {
+                                Text("退出", color = MaterialTheme.colorScheme.error)
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showLogoutConfirmDialog = false }) {
+                                Text("取消")
+                            }
+                        }
+                    )
                 }
 
                 if (showDatePickerModal) {
@@ -382,19 +436,9 @@ private fun AdvancedSettingsSection(onNavigate: (Destination) -> Unit) {
                 fontWeight = FontWeight.SemiBold
             )
             SettingItem(
-                title = stringResource(Res.string.item_course_conversion),
-                subtitle = stringResource(Res.string.desc_course_conversion),
-                onClick = { onNavigate(Destination.CourseTableConversion) }
-            )
-            SettingItem(
                 title = stringResource(Res.string.title_course_notification_settings),
                 subtitle = stringResource(Res.string.desc_notification_settings),
                 onClick = { onNavigate(Destination.NotificationSettings) }
-            )
-            SettingItem(
-                title = stringResource(Res.string.title_manage_course_tables),
-                subtitle = stringResource(Res.string.desc_manage_course_tables),
-                onClick = { onNavigate(Destination.ManageCourseTables) }
             )
             SettingItem(
                 title = stringResource(Res.string.item_course_management),
@@ -430,7 +474,14 @@ private fun SettingItem(
     subtitle: String,
     icon: ImageVector = vectorResource(Res.drawable.chevron_right_24px),
     onClick: (() -> Unit)? = null,
-    trailingContent: @Composable () -> Unit = { Icon(icon, contentDescription = null) }
+    trailingContent: @Composable () -> Unit = {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(24.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
 ) {
     Row(
         modifier = Modifier
@@ -593,4 +644,177 @@ private fun NumberPickerDialog(
             }
         }
     )
+}
+
+/**
+ * 重庆科技大学教务账号设置分组
+ */
+@Composable
+private fun AccountSettingsSection(
+    studentId: String,
+    isLoggedIn: Boolean,
+    isSyncing: Boolean,
+    onSyncClick: () -> Unit,
+    onLogoutClick: () -> Unit
+) {
+    val uriHandler = LocalUriHandler.current
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(
+            modifier = Modifier.padding(SETTING_PADDING),
+            verticalArrangement = Arrangement.spacedBy(ITEM_SPACING)
+        ) {
+            Text(
+                text = "教务账号",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            // 当前学号及头像
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        modifier = Modifier.size(42.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = vectorResource(Res.drawable.person_24px),
+                                contentDescription = "学生头像",
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+
+                    Column {
+                        Text(
+                            text = "当前学号",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Text(
+                            text = if (isLoggedIn && studentId.isNotEmpty()) studentId else "未登录",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                if (isLoggedIn) {
+                    TextButton(
+                        onClick = onLogoutClick,
+                        enabled = !isSyncing
+                    ) {
+                        Text("退出", color = MaterialTheme.colorScheme.error)
+                    }
+                } else {
+                    TextButton(
+                        onClick = onSyncClick
+                    ) {
+                        Text("去登录", color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+            // 同步课表
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 12.dp)
+                ) {
+                    Text(
+                        text = "同步课表",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        text = "从重科教务系统更新课程",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Button(
+                    onClick = onSyncClick,
+                    enabled = !isSyncing,
+                    shape = RoundedCornerShape(10.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    if (isSyncing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("更新中", style = MaterialTheme.typography.labelLarge)
+                    } else {
+                        Text("更新", style = MaterialTheme.typography.labelLarge)
+                    }
+                }
+            }
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+            // 查看校历
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        uriHandler.openUri("https://www.cqust.edu.cn/index/js/xl.htm")
+                    }
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 12.dp)
+                ) {
+                    Text(
+                        text = "查看校历",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        text = "查看学校行课时间与放假安排",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                OutlinedButton(
+                    onClick = {
+                        uriHandler.openUri("https://www.cqust.edu.cn/index/js/xl.htm")
+                    },
+                    shape = RoundedCornerShape(10.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Text("查看", style = MaterialTheme.typography.labelLarge)
+                }
+            }
+        }
+    }
 }

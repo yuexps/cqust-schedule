@@ -23,6 +23,7 @@ import kotlinx.datetime.toLocalDateTime
 import org.koin.core.annotation.Named
 import org.koin.core.annotation.Single
 import kotlin.time.Clock
+import kotlin.time.Instant
 
 /**
  * 应用配置领域仓库
@@ -200,6 +201,38 @@ class AppSettingsRepository(
     }
 
     /**
+     * 设置当前课表的学期起始日期（传入毫秒时间戳）。
+     */
+    suspend fun setSemesterStartDate(dateMillis: Long) {
+        val selectedDate = Instant.fromEpochMilliseconds(dateMillis)
+            .toLocalDateTime(TimeZone.currentSystemDefault()).date
+        setSemesterStartDate(selectedDate.toString())
+    }
+
+    /**
+     * 设置当前课表的学期起始日期（传入 YYYY-MM-DD 字符串）。
+     */
+    suspend fun setSemesterStartDate(dateStr: String) {
+        val appSettings = getAppSettingsOnce()
+        var currentCourseId = appSettings.currentCourseTableId
+        if (currentCourseId.isEmpty()) {
+            val firstTable = courseTableDao.getAllCourseTables().first().firstOrNull()
+            if (firstTable != null) {
+                currentCourseId = firstTable.id
+                insertOrUpdateAppSettings(appSettings.copy(currentCourseTableId = currentCourseId))
+            } else {
+                return
+            }
+        }
+
+        val currentConfig = courseTableConfigDao.getConfigOnce(currentCourseId)
+            ?: COURSE_CONFIG_TEMPLATE.copy(courseTableId = currentCourseId)
+
+        val updatedConfig = currentConfig.copy(semesterStartDate = dateStr)
+        insertOrUpdateCourseConfig(updatedConfig)
+    }
+
+    /**
      * 辅助函数：根据目标周数反推开学日期。
      */
     private fun calculateSemesterStartDate(week: Int, firstDayOfWeekInt: Int): String {
@@ -223,5 +256,44 @@ class AppSettingsRepository(
             7 - (targetDay - currentDay)
         }
         return LocalDate.fromEpochDays(date.toEpochDays() - daysToSubtract)
+    }
+
+    /**
+     * 更新重科登录状态及凭证
+     */
+    suspend fun updateCqustLoginInfo(
+        studentId: String,
+        passwordRaw: String,
+        semesterId: String
+    ) {
+        dataStore.edit { preferences ->
+            preferences[AppSettingsModel.KEY_CQUST_STUDENT_ID] = studentId
+            preferences[AppSettingsModel.KEY_CQUST_PASSWORD] = passwordRaw
+            preferences[AppSettingsModel.KEY_CQUST_SEMESTER_ID] = semesterId
+            preferences[AppSettingsModel.KEY_CQUST_IS_LOGGED_IN] = true
+            preferences[AppSettingsModel.KEY_CQUST_LAST_SYNC_TIME] = Clock.System.now().toEpochMilliseconds()
+        }
+    }
+
+    /**
+     * 更新上次成功同步课表的时间戳
+     */
+    suspend fun updateCqustLastSyncTime(timestamp: Long = Clock.System.now().toEpochMilliseconds()) {
+        dataStore.edit { preferences ->
+            preferences[AppSettingsModel.KEY_CQUST_LAST_SYNC_TIME] = timestamp
+        }
+    }
+
+    /**
+     * 退出重科登录，清除凭证
+     */
+    suspend fun clearCqustLoginInfo() {
+        dataStore.edit { preferences ->
+            preferences[AppSettingsModel.KEY_CQUST_STUDENT_ID] = ""
+            preferences[AppSettingsModel.KEY_CQUST_PASSWORD] = ""
+            preferences[AppSettingsModel.KEY_CQUST_SEMESTER_ID] = ""
+            preferences[AppSettingsModel.KEY_CQUST_IS_LOGGED_IN] = false
+            preferences[AppSettingsModel.KEY_CQUST_LAST_SYNC_TIME] = 0L
+        }
     }
 }

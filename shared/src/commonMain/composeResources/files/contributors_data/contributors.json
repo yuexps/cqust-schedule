@@ -1,0 +1,46 @@
+{
+  "app_dev": [
+    {
+      "name": "XingHeYuZhuan",
+      "url": "https://github.com/XingHeYuZhuan",
+      "avatar": "avatars/XingHeYuZhuan.png"
+    },
+    {
+      "name": "Jursin",
+      "url": "https://github.com/Jursin",
+      "avatar": "avatars/Jursin.png"
+    },
+    {
+      "name": "yuexps",
+      "url": "https://github.com/yuexps",
+      "avatar": "avatars/yuexps.png"
+    },
+    {
+      "name": "huanx",
+      "url": "https://github.com/huanxiangxinquan",
+      "avatar": "avatars/huanxiangxinquan.png"
+    }
+  ],
+  "jiaowu_adapter": [
+    {
+      "name": "XingHeYuZhuan",
+      "url": "https://github.com/XingHeYuZhuan",
+      "avatar": "avatars/XingHeYuZhuan.png"
+    },
+    {
+      "name": "Jursin",
+      "url": "https://github.com/Jursin",
+      "avatar": "avatars/Jursin.png"
+    },
+    {
+      "name": "yuexps",
+      "url": "https://github.com/yuexps",
+      "avatar": "avatars/yuexps.png"
+    },
+    {
+      "name": "huanx",
+      "url": "https://github.com/huanxiangxinquan",
+      "avatar": "avatars/huanxiangxinquan.png"
+    }
+  ]
+}

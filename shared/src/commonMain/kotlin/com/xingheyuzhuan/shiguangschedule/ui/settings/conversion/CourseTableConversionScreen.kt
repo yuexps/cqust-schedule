@@ -240,7 +240,7 @@ fun CourseTableConversionScreen(
                     ConversionRow(
                         title = stringResource(Res.string.item_school_system_import),
                         desc = stringResource(Res.string.desc_school_import_quick),
-                        onClick = { onNavigate(Destination.SchoolSelectionListScreen) }
+                        onClick = { onNavigate(Destination.CqustLogin) }
                     )
                 }
             }

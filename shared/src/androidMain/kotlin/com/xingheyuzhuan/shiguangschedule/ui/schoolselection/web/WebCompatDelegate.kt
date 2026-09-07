@@ -26,6 +26,7 @@ class WebCompatDelegate(private val webView: WebView) {
         webView.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
+            @Suppress("DEPRECATION")
             databaseEnabled = true
             @Suppress("DEPRECATION")
             allowUniversalAccessFromFileURLs = true

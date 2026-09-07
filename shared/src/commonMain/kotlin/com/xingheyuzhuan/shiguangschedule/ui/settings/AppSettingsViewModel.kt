@@ -21,6 +21,10 @@ import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.toLocalDateTime
+import com.xingheyuzhuan.shiguangschedule.data.api.cqust.CqustSyncManager
+import com.xingheyuzhuan.shiguangschedule.ui.components.ToastManager
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.annotation.KoinViewModel
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -37,7 +41,8 @@ data class SettingsUiState(
 
 @KoinViewModel
 class SettingsViewModel(
-    private val appSettingsRepository: AppSettingsRepository
+    private val appSettingsRepository: AppSettingsRepository,
+    private val cqustSyncManager: CqustSyncManager
 ) : ViewModel() {
 
     // 1. 基础配置流 (DataStore)
@@ -229,6 +234,50 @@ class SettingsViewModel(
             val currentSettings = uiState.value.appSettings
             val updatedSettings = currentSettings.copy(developerModeEnabled = enabled)
             appSettingsRepository.insertOrUpdateAppSettings(updatedSettings)
+        }
+    }
+
+    /**
+     * 退出重科教务系统登录
+     */
+    fun logoutCqust(onLoggedOut: () -> Unit) {
+        viewModelScope.launch {
+            appSettingsRepository.clearCqustLoginInfo()
+            onLoggedOut()
+        }
+    }
+
+    private val _isSyncing = MutableStateFlow(false)
+    val isSyncing: StateFlow<Boolean> = _isSyncing.asStateFlow()
+
+    /**
+     * 后台静默/一键重新同步重科课表，无需返回登录页
+     */
+    fun reSyncCqustCourses(onNeedLogin: () -> Unit) {
+        val settings = uiState.value.appSettings
+        val sid = settings.cqustStudentId
+        val pwd = settings.cqustPassword
+
+        if (sid.isEmpty() || pwd.isEmpty()) {
+            ToastManager.show("未检测到已保存的账号密码，请重新登录")
+            onNeedLogin()
+            return
+        }
+
+        viewModelScope.launch {
+            _isSyncing.value = true
+
+            val syncResult = cqustSyncManager.syncCourses(sid, pwd)
+            syncResult.fold(
+                onSuccess = { count ->
+                    _isSyncing.value = false
+                    ToastManager.show("课表已同步，共 $count 门课程")
+                },
+                onFailure = { error ->
+                    _isSyncing.value = false
+                    ToastManager.show("同步失败：${error.message}")
+                }
+            )
         }
     }
 }

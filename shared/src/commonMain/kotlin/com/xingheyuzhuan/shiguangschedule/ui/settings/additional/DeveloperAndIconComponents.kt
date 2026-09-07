@@ -42,11 +42,11 @@ import shiguangschedule.shared.generated.resources.ic_launcher_foreground
 import shiguangschedule.shared.generated.resources.item_developer_options
 
 // 图标背景颜色定义
-private val NormalIconBgColor = Color(0xFF73CAF8)
-private val DeveloperIconBgColor = Color(0xFFBD0000)
+private val NormalIconBgColor = Color(0xFF961571)
+private val DeveloperIconBgColor = Color(0xFF333333)
 
 /**
- * 动态 App 图标头部组件（包含连续 5 次点击解锁开发者模式逻辑）
+ * 动态应用图标头部组件（支持连续点击触发开发者模式）
  */
 @Composable
 fun DynamicAppIconHeader(
@@ -67,7 +67,6 @@ fun DynamicAppIconHeader(
         modifier = modifier
             .size(120.dp)
             .clip(RoundedCornerShape(24.dp))
-            .background(animatedBgColor)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
@@ -83,9 +82,7 @@ fun DynamicAppIconHeader(
         Image(
             painter = painterResource(Res.drawable.ic_launcher_foreground),
             contentDescription = stringResource(Res.string.a11y_app_icon),
-            modifier = Modifier
-                .fillMaxSize()
-                .scale(1.3f),
+            modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Fit
         )
     }

@@ -25,7 +25,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,6 +36,7 @@ import com.xingheyuzhuan.shiguangschedule.Destination
 import com.xingheyuzhuan.shiguangschedule.tool.UpdateChecker
 import com.xingheyuzhuan.shiguangschedule.tool.UpdatePlatform
 import com.xingheyuzhuan.shiguangschedule.tool.UpdateStatus
+import com.xingheyuzhuan.shiguangschedule.ui.components.ToastManager
 import com.xingheyuzhuan.shiguangschedule.ui.settings.SettingsViewModel
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -46,6 +49,7 @@ import shiguangschedule.shared.generated.resources.a11y_back
 import shiguangschedule.shared.generated.resources.app_name
 import shiguangschedule.shared.generated.resources.arrow_back_24px
 import shiguangschedule.shared.generated.resources.code_24px
+import shiguangschedule.shared.generated.resources.groups_24px
 import shiguangschedule.shared.generated.resources.home_24px
 import shiguangschedule.shared.generated.resources.item_check_software_update
 import shiguangschedule.shared.generated.resources.item_contributors
@@ -63,7 +67,9 @@ import shiguangschedule.shared.generated.resources.theme_settings_title
 import shiguangschedule.shared.generated.resources.title_more_options
 import shiguangschedule.shared.generated.resources.update_24px
 
-private const val GITHUB_REPO_URL = "https://github.com/XingHeYuZhuan/shiguangschedule"
+private const val GITHUB_REPO_URL = "https://github.com/yuexps/cqust-schedule"
+private const val QQ_GROUP_NUMBER = "767082393"
+private const val QQ_GROUP_KEY = "n7xA-Pa5-I7yrVJ7QWf5WeEotttaxusg"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,6 +82,7 @@ fun MoreOptionsScreen(
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     val uriHandler = LocalUriHandler.current
+    val clipboardManager = LocalClipboardManager.current
 
     // 从 Koin 动态获取注入的版本号
     val appVersionName: String = koinInject(named("AppVersionName"))
@@ -86,21 +93,33 @@ fun MoreOptionsScreen(
 
     // 更新逻辑相关状态
     var updateStatus by remember { mutableStateOf<UpdateStatus>(UpdateStatus.Idle) }
-    var selectedPlatform by remember { mutableStateOf(UpdatePlatform.GITEE) }
 
     // 弹窗可见性控制
     var showUpdateDialog by remember { mutableStateOf(false) }
-    var showChannelDialog by remember { mutableStateOf(false) }
     var showStartScreenDialog by remember { mutableStateOf(false) }
 
-    // 逻辑：执行更新检查
-    val startUpdateCheck: (UpdatePlatform) -> Unit = { platform ->
-        selectedPlatform = platform
-        showChannelDialog = false
+    // 逻辑：直接执行 GitHub 更新检查，无需选择渠道
+    val startUpdateCheck: () -> Unit = {
         updateStatus = UpdateStatus.Checking
         showUpdateDialog = true
         coroutineScope.launch {
-            updateStatus = updateChecker.checkUpdate(platform, appVersionName)
+            updateStatus = updateChecker.checkUpdate(UpdatePlatform.GITHUB, appVersionName)
+        }
+    }
+
+    // 逻辑：呼起手 Q 申请加入交流群
+    val joinQQGroup: () -> Unit = {
+        val qqSchemeUrl = "mqqopensdkapi://bizAgent/qm/qr?url=http%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Ffrom%3Dapp%26p%3Dandroid%26jump_from%3Dwebapi%26k%3D$QQ_GROUP_KEY"
+        val qqWebUrl = "https://qm.qq.com/cgi-bin/qm/qr?k=$QQ_GROUP_KEY"
+        try {
+            uriHandler.openUri(qqSchemeUrl)
+        } catch (_: Exception) {
+            try {
+                uriHandler.openUri(qqWebUrl)
+            } catch (_: Exception) {
+                clipboardManager.setText(AnnotatedString(QQ_GROUP_NUMBER))
+                ToastManager.show("已复制群号 $QQ_GROUP_NUMBER，请在 QQ 中搜索添加")
+            }
         }
     }
 
@@ -175,7 +194,7 @@ fun MoreOptionsScreen(
                     SettingListItem(
                         icon = vectorResource(Res.drawable.update_24px),
                         title = stringResource(Res.string.item_check_software_update),
-                        onClick = { showChannelDialog = true }
+                        onClick = startUpdateCheck
                     )
 
                     // 语言切换 (导航至独立页面)
@@ -213,18 +232,25 @@ fun MoreOptionsScreen(
                         onClick = { uriHandler.openUri(GITHUB_REPO_URL) }
                     )
 
+                    // QQ 交流群
+                    SettingListItem(
+                        icon = vectorResource(Res.drawable.groups_24px),
+                        title = "QQ 交流群",
+                        trailingContent = {
+                            Text(
+                                text = QQ_GROUP_NUMBER,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        onClick = joinQQGroup
+                    )
+
                     // 开源许可证
                     SettingListItem(
                         icon = vectorResource(Res.drawable.list_alt_24px),
                         title = stringResource(Res.string.item_open_source_licenses),
                         onClick = { onNavigate(Destination.OpenSourceLicenses) }
-                    )
-
-                    // 更新适配仓库
-                    SettingListItem(
-                        icon = vectorResource(Res.drawable.update_24px),
-                        title = stringResource(Res.string.item_update_repo),
-                        onClick = { onNavigate(Destination.UpdateRepo) }
                     )
 
                     // 贡献者
@@ -234,9 +260,6 @@ fun MoreOptionsScreen(
                         onClick = { onNavigate(Destination.ContributionList) },
                         showDivider = false
                     )
-
-                    // 鸣谢内容
-                    AcknowledgmentContent()
                 }
             }
             Spacer(modifier = Modifier.height(32.dp))
@@ -267,13 +290,5 @@ fun MoreOptionsScreen(
         onDownloadClick = { targetUrl ->
             updateChecker.launchUpdate(targetUrl)
         }
-    )
-
-    // 更新渠道选择弹窗
-    ChannelSelectionDialog(
-        showDialog = showChannelDialog,
-        currentSelected = selectedPlatform,
-        onDismiss = { showChannelDialog = false },
-        onConfirm = startUpdateCheck
     )
 }

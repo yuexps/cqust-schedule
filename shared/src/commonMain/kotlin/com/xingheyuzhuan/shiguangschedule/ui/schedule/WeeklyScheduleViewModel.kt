@@ -70,7 +70,8 @@ data class WeeklyScheduleUiState(
     val currentSectionIndex: Int = -1,
     val daysUntilStart: Long = 0,
     val floatingCourse: CourseWithWeeks? = null,
-    val floatingSourceWeek: Int? = null
+    val floatingSourceWeek: Int? = null,
+    val isReady: Boolean = false
 )
 
 /**
@@ -210,7 +211,13 @@ class WeeklyScheduleViewModel (
 
             combine(configAndTimeFlow, currentCoursesFlow, timeSlotsFlow) { configPkg, cache, timeSlots ->
                 val config = configPkg.config
-                val startDate = config?.semesterStartDate?.let { LocalDate.parse(it) }
+                val startDate = config?.semesterStartDate?.takeIf { it.isNotBlank() }?.let {
+                    try {
+                        LocalDate.parse(it)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
                 val firstDayOfWeekInt = config?.firstDayOfWeek ?: DayOfWeek.MONDAY.isoDayNumber
                 val totalWeeks = config?.semesterTotalWeeks ?: 20
                 val today = getTodayLocalDate()
@@ -254,7 +261,8 @@ class WeeklyScheduleViewModel (
                     currentSectionIndex = currentSectionIndex,
                     daysUntilStart = daysUntil,
                     floatingCourse = previousState.floatingCourse,
-                    floatingSourceWeek = previousState.floatingSourceWeek
+                    floatingSourceWeek = previousState.floatingSourceWeek,
+                    isReady = true
                 )
             }.collect { _uiState.value = it }
         }
@@ -736,6 +744,15 @@ class WeeklyScheduleViewModel (
             }
         }
         return result
+    }
+
+    /**
+     * 保存用户选定的学期起始日期
+     */
+    fun setSemesterStartDate(dateMillis: Long) {
+        viewModelScope.launch {
+            appSettingsRepository.setSemesterStartDate(dateMillis)
+        }
     }
 }
 

@@ -118,6 +118,21 @@ data class AppSettingsModel(
 
     /** 开发者功能总开关（默认关闭） */
     val developerModeEnabled: Boolean = false,
+
+    /** 重庆科技大学登录学号 */
+    val cqustStudentId: String = "",
+
+    /** 重庆科技大学登录密码 */
+    val cqustPassword: String = "",
+
+    /** 重庆科技大学导入的学期 */
+    val cqustSemesterId: String = "",
+
+    /** 重庆科技大学是否已登录 */
+    val cqustIsLoggedIn: Boolean = false,
+
+    /** 重庆科技大学上次成功同步课表的时间戳 (毫秒) */
+    val cqustLastSyncTime: Long = 0L,
 ) {
     /**
      * 将 DataStore 的 Key 定义在伴生对象中。
@@ -139,6 +154,11 @@ data class AppSettingsModel(
         val KEY_CUSTOM_LIGHT_PRIMARY = longPreferencesKey("custom_light_primary")
         val KEY_CUSTOM_DARK_PRIMARY = longPreferencesKey("custom_dark_primary")
         val KEY_DEVELOPER_MODE_ENABLED = booleanPreferencesKey("developer_mode_enabled")
+        val KEY_CQUST_STUDENT_ID = stringPreferencesKey("cqust_student_id")
+        val KEY_CQUST_PASSWORD = stringPreferencesKey("cqust_password")
+        val KEY_CQUST_SEMESTER_ID = stringPreferencesKey("cqust_semester_id")
+        val KEY_CQUST_IS_LOGGED_IN = booleanPreferencesKey("cqust_is_logged_in")
+        val KEY_CQUST_LAST_SYNC_TIME = longPreferencesKey("cqust_last_sync_time")
 
         /**
          * 从 Preferences 中解析出 AppSettingsModel
@@ -160,6 +180,11 @@ data class AppSettingsModel(
                 customLightPrimary = prefs[KEY_CUSTOM_LIGHT_PRIMARY] ?: d.customLightPrimary,
                 customDarkPrimary = prefs[KEY_CUSTOM_DARK_PRIMARY] ?: d.customDarkPrimary,
                 developerModeEnabled = prefs[KEY_DEVELOPER_MODE_ENABLED] ?: d.developerModeEnabled,
+                cqustStudentId = prefs[KEY_CQUST_STUDENT_ID] ?: d.cqustStudentId,
+                cqustPassword = prefs[KEY_CQUST_PASSWORD] ?: d.cqustPassword,
+                cqustSemesterId = prefs[KEY_CQUST_SEMESTER_ID] ?: d.cqustSemesterId,
+                cqustIsLoggedIn = prefs[KEY_CQUST_IS_LOGGED_IN] ?: d.cqustIsLoggedIn,
+                cqustLastSyncTime = prefs[KEY_CQUST_LAST_SYNC_TIME] ?: d.cqustLastSyncTime,
             )
         }
     }

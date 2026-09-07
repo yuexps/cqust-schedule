@@ -12,15 +12,15 @@ kotlin {
 }
 
 android {
-    namespace = "com.xingheyuzhuan.shiguangschedule"
+    namespace = "yuexps.cqust.schedule"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.xingheyuzhuan.shiguangschedule"
+        applicationId = "yuexps.cqust.schedule"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 34
-        versionName = "2.0.0"
+        versionCode = 35
+        versionName = "3.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

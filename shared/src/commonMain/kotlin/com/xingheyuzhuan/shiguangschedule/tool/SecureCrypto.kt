@@ -9,3 +9,5 @@ expect class SecureCrypto() {
     fun encrypt(data: String): CryptoResult?
     fun decrypt(encryptedData: String, ivString: String): String?
 }
+
+expect fun cqustTripleDesEncrypt(message: String, key: String): String

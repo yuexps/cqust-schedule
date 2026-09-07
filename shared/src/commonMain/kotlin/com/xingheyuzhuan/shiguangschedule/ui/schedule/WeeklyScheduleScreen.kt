@@ -2,14 +2,17 @@ package com.xingheyuzhuan.shiguangschedule.ui.schedule
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -17,6 +20,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -27,6 +37,7 @@ import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,14 +46,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import com.xingheyuzhuan.shiguangschedule.ui.components.DatePickerModal
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
@@ -140,9 +155,18 @@ fun WeeklyScheduleScreen(
 
     // UI 交互控制弹窗标志位
     var showWeekSelector by remember { mutableStateOf(false) }
-    var showTableSwitcher by remember { mutableStateOf(false) }
     var isGridHolding by remember { mutableStateOf(false) }
     var selectedBlockForDetail by remember { mutableStateOf<MergedCourseBlock?>(null) }
+    var showStartDatePromptDialog by remember { mutableStateOf(false) }
+    var showDatePickerModal by remember { mutableStateOf(false) }
+    var hasDismissedStartDatePrompt by rememberSaveable { mutableStateOf(false) }
+
+    // 进入主界面后，若配置已加载完成、未设置开学日期且用户未处理过，则主动弹窗引导设置
+    LaunchedEffect(uiState.isReady, uiState.isSemesterSet, uiState.semesterStartDate) {
+        if (uiState.isReady && (!uiState.isSemesterSet || uiState.semesterStartDate == null) && !hasDismissedStartDatePrompt) {
+            showStartDatePromptDialog = true
+        }
+    }
 
     val composedStyle by remember(uiState.style) {
         derivedStateOf { with(ScheduleGridStyleComposed) { uiState.style.toComposedStyle() } }
@@ -244,7 +268,7 @@ fun WeeklyScheduleScreen(
                                 modifier = Modifier
                                     .clickable {
                                         if (!uiState.isSemesterSet || uiState.semesterStartDate == null) {
-                                            onNavigate(Destination.Settings)
+                                            showDatePickerModal = true
                                         } else {
                                             showWeekSelector = true
                                         }
@@ -263,15 +287,6 @@ fun WeeklyScheduleScreen(
                                         .size(20.dp)
                                         .offset(y = (-4).dp),
                                     tint = customSubTextColor
-                                )
-                            }
-                        },
-                        actions = {
-                            IconButton(onClick = { showTableSwitcher = true }) {
-                                Icon(
-                                    imageVector = vectorResource(Res.drawable.swap_horiz_24px),
-                                    contentDescription = stringResource(Res.string.action_select_table),
-                                    tint = customTextColor
                                 )
                             }
                         },
@@ -524,18 +539,6 @@ fun WeeklyScheduleScreen(
         )
     }
 
-    // 课表切换弹窗
-    if (showTableSwitcher) {
-        CourseTablePickerDialog(
-            title = stringResource(Res.string.action_select_table),
-            onDismissRequest = { showTableSwitcher = false },
-            onTableSelected = { table: CourseTable ->
-                viewModel.switchCourseTable(table.id)
-                showTableSwitcher = false
-            }
-        )
-    }
-
     // 课程详情弹窗
     if (selectedBlockForDetail != null) {
         CourseDetailBottomSheet(
@@ -544,6 +547,105 @@ fun WeeklyScheduleScreen(
             onEditClick = { courseId ->
                 selectedBlockForDetail = null
                 onNavigate(Destination.AddEditCourse(courseId = courseId))
+            }
+        )
+    }
+
+    // 引导设置学期开学日期弹窗
+    if (showStartDatePromptDialog) {
+        val uriHandler = LocalUriHandler.current
+        AlertDialog(
+            onDismissRequest = {
+                showStartDatePromptDialog = false
+                hasDismissedStartDatePrompt = true
+            },
+            title = {
+                Text(
+                    text = "设置行课日期",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "请选择本学期的行课日期（第 1 周，周一），以便为您准确展示当前周的课程安排。",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    val calendarUrl = "https://www.cqust.edu.cn/index/js/xl.htm"
+                    val annotatedPrompt = buildAnnotatedString {
+                        append("提示：如不确定行课开始日期，您可查阅重庆科技大学")
+                        pushStringAnnotation(tag = "CALENDAR_URL", annotation = calendarUrl)
+                        withStyle(
+                            style = SpanStyle(
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold,
+                                textDecoration = TextDecoration.Underline
+                            )
+                        ) {
+                            append("官网校历")
+                        }
+                        pop()
+                        append("进行确认。")
+                    }
+
+                    ClickableText(
+                        text = annotatedPrompt,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        onClick = { offset ->
+                            annotatedPrompt.getStringAnnotations(
+                                tag = "CALENDAR_URL",
+                                start = offset,
+                                end = offset
+                            ).firstOrNull()?.let {
+                                uriHandler.openUri(it.item)
+                            }
+                        }
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showStartDatePromptDialog = false
+                        hasDismissedStartDatePrompt = true
+                        showDatePickerModal = true
+                    }
+                ) {
+                    Text("选择行课日期")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showStartDatePromptDialog = false
+                        hasDismissedStartDatePrompt = true
+                    }
+                ) {
+                    Text("稍后设置")
+                }
+            }
+        )
+    }
+
+    // 开学日期选择弹窗
+    if (showDatePickerModal) {
+        DatePickerModal(
+            onDateSelected = { selectedDateMillis ->
+                showDatePickerModal = false
+                hasDismissedStartDatePrompt = true
+                if (selectedDateMillis != null) {
+                    viewModel.setSemesterStartDate(selectedDateMillis)
+                }
+            },
+            onDismiss = {
+                showDatePickerModal = false
+                hasDismissedStartDatePrompt = true
             }
         )
     }

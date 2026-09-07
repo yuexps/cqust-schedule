@@ -50,22 +50,43 @@ import com.xingheyuzhuan.shiguangschedule.ui.settings.time.TimeSlotManagementScr
 import com.xingheyuzhuan.shiguangschedule.ui.settings.update.UpdateRepoScreen
 import com.xingheyuzhuan.shiguangschedule.ui.theme.ShiguangScheduleTheme
 import com.xingheyuzhuan.shiguangschedule.ui.today.TodayScheduleScreen
+import androidx.compose.runtime.LaunchedEffect
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import com.xingheyuzhuan.shiguangschedule.data.api.cqust.CqustSyncManager
+import com.xingheyuzhuan.shiguangschedule.ui.cqust.CqustLoginScreen
 
 @Composable
 fun App() {
     val viewModel: SettingsViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsState()
+    val cqustSyncManager: CqustSyncManager = koinInject()
 
     if (state.isReady) {
+        val isLoggedIn = state.appSettings.cqustIsLoggedIn
+
+        // 仅在已登录状态下进入应用时触发静默同步（内部有 6 小时冷却机制与异常静默兜底）
+        LaunchedEffect(isLoggedIn) {
+            if (isLoggedIn) {
+                cqustSyncManager.silentSyncIfNeeded()
+            }
+        }
+
         ShiguangScheduleTheme(settings = state.appSettings) {
-            val startDest = remember(state.appSettings.startScreen) {
-                when (state.appSettings.startScreen) {
-                    StartScreen.COURSE_SCHEDULE -> Destination.CourseSchedule
-                    StartScreen.TODAY_SCHEDULE -> Destination.TodaySchedule
+            val startDest = remember(isLoggedIn, state.appSettings.startScreen) {
+                if (!isLoggedIn) {
+                    Destination.CqustLogin
+                } else {
+                    when (state.appSettings.startScreen) {
+                        StartScreen.COURSE_SCHEDULE -> Destination.CourseSchedule
+                        StartScreen.TODAY_SCHEDULE -> Destination.TodaySchedule
+                    }
                 }
             }
-            AppNavigation(startDestination = startDest)
+            AppNavigation(
+                startDestination = startDest,
+                isLoggedIn = isLoggedIn
+            )
         }
     } else {
         Surface(modifier = Modifier.fillMaxSize()) {}
@@ -73,7 +94,10 @@ fun App() {
 }
 
 @Composable
-fun AppNavigation(startDestination: Destination) {
+fun AppNavigation(
+    startDestination: Destination,
+    isLoggedIn: Boolean
+) {
     val backStack = rememberNavBackStack(
         configuration = navSavedStateConfig,
         startDestination
@@ -150,7 +174,8 @@ fun AppNavigation(startDestination: Destination) {
                 ScreenContent(
                     targetDest = destination,
                     onNavigate = onNavigate,
-                    onBack = onBack
+                    onBack = onBack,
+                    isLoggedIn = isLoggedIn
                 )
             }
         }
@@ -161,7 +186,8 @@ fun AppNavigation(startDestination: Destination) {
 fun ScreenContent(
     targetDest: Destination,
     onNavigate: (Destination) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    isLoggedIn: Boolean
 ) {
     when (targetDest) {
         Destination.CourseSchedule -> WeeklyScheduleScreen(onNavigate, onBack)
@@ -169,7 +195,10 @@ fun ScreenContent(
         Destination.TodaySchedule -> TodayScheduleScreen(onNavigate, onBack)
         Destination.TimeSlotSettings -> TimeSlotManagementScreen(onBack)
         Destination.ManageCourseTables -> ManageCourseTablesScreen(onBack)
-        Destination.SchoolSelectionListScreen -> SchoolSelectionListScreen(onNavigate, onBack)
+        Destination.SchoolSelectionListScreen -> CqustLoginScreen(
+            onLoginSuccess = { onNavigate(Destination.CourseSchedule) },
+            onBack = onBack
+        )
         Destination.CourseTableConversion -> CourseTableConversionScreen(onNavigate, onBack)
         Destination.NotificationSettings -> NotificationSettingsScreen(onBack)
         Destination.MoreOptions -> MoreOptionsScreen(onNavigate, onBack)
@@ -184,9 +213,14 @@ fun ScreenContent(
         Destination.ThemeSettings -> ThemeSettingsScreen(onBack)
         Destination.BackupAndRestore -> BackupScreen(onBack)
         Destination.LanguageSettings -> LanguageSettingScreen(onBack)
+        Destination.CqustLogin -> CqustLoginScreen(
+            onLoginSuccess = { onNavigate(Destination.CourseSchedule) },
+            onBack = if (isLoggedIn) onBack else null
+        )
 
-        is Destination.AdapterSelection -> AdapterSelectionScreen(
-            onNavigate, onBack, targetDest.schoolId, targetDest.schoolName, targetDest.categoryNumber, targetDest.resourceFolder
+        is Destination.AdapterSelection -> CqustLoginScreen(
+            onLoginSuccess = { onNavigate(Destination.CourseSchedule) },
+            onBack = onBack
         )
         is Destination.WebView -> WebViewScreen(
             onNavigate, onBack, targetDest.initialUrl, targetDest.assetJsPath

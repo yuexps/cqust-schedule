@@ -67,3 +67,14 @@ actual class SecureCrypto {
         }
     }
 }
+
+actual fun cqustTripleDesEncrypt(message: String, key: String): String {
+    val keyBytes = key.toByteArray(Charsets.UTF_8).copyOf(24)
+    val ivBytes = key.substring(0, 8).toByteArray(Charsets.UTF_8)
+    val secretKey = javax.crypto.spec.SecretKeySpec(keyBytes, "DESede")
+    val ivSpec = javax.crypto.spec.IvParameterSpec(ivBytes)
+    val cipher = Cipher.getInstance("DESede/CBC/PKCS5Padding")
+    cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec)
+    val encrypted = cipher.doFinal(message.toByteArray(Charsets.UTF_8))
+    return Base64.encodeToString(encrypted, Base64.NO_WRAP)
+}
