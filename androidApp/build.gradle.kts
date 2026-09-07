@@ -1,4 +1,13 @@
 import com.android.build.api.variant.FilterConfiguration
+import java.io.FileInputStream
+import java.util.Properties
+
+val keystorePropertiesFile = rootProject.file("local.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.exists()) {
+        load(FileInputStream(keystorePropertiesFile))
+    }
+}
 
 plugins {
     alias(libs.plugins.android.application)
@@ -19,10 +28,26 @@ android {
         applicationId = "yuexps.cqust.schedule"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 35
-        versionName = "3.0.0"
+        versionCode = 36
+        versionName = "3.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            val storeFilePath = keystoreProperties.getProperty("RELEASE_STORE_FILE")
+                ?: System.getenv("RELEASE_STORE_FILE")
+            val keystoreFile = if (!storeFilePath.isNullOrEmpty()) file(storeFilePath) else null
+            if (keystoreFile != null && keystoreFile.exists()) {
+                storeFile = keystoreFile
+                storePassword = keystoreProperties.getProperty("RELEASE_STORE_PASSWORD") ?: System.getenv("RELEASE_STORE_PASSWORD")
+                keyAlias = keystoreProperties.getProperty("RELEASE_KEY_ALIAS") ?: System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword = keystoreProperties.getProperty("RELEASE_KEY_PASSWORD") ?: System.getenv("RELEASE_KEY_PASSWORD")
+            } else {
+                initWith(getByName("debug"))
+            }
+        }
     }
 
     buildTypes {
@@ -33,7 +58,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -46,7 +71,7 @@ android {
         abi {
             isEnable = true
             exclude("mips", "mips64", "armeabi", "riscv64", "x86")
-            isUniversalApk = false
+            isUniversalApk = true
             include("armeabi-v7a", "arm64-v8a", "x86_64")
         }
     }

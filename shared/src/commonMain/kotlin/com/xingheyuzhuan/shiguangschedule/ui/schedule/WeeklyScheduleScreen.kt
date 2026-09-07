@@ -20,11 +20,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.ClickableText
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.withLink
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -52,7 +53,6 @@ import androidx.compose.runtime.snapshotFlow
 import com.xingheyuzhuan.shiguangschedule.ui.components.DatePickerModal
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -553,7 +553,6 @@ fun WeeklyScheduleScreen(
 
     // 引导设置学期开学日期弹窗
     if (showStartDatePromptDialog) {
-        val uriHandler = LocalUriHandler.current
         AlertDialog(
             onDismissRequest = {
                 showStartDatePromptDialog = false
@@ -578,34 +577,28 @@ fun WeeklyScheduleScreen(
                     val calendarUrl = "https://www.cqust.edu.cn/index/js/xl.htm"
                     val annotatedPrompt = buildAnnotatedString {
                         append("提示：如不确定行课开始日期，您可查阅重庆科技大学")
-                        pushStringAnnotation(tag = "CALENDAR_URL", annotation = calendarUrl)
-                        withStyle(
-                            style = SpanStyle(
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold,
-                                textDecoration = TextDecoration.Underline
+                        withLink(
+                            LinkAnnotation.Url(
+                                url = calendarUrl,
+                                styles = TextLinkStyles(
+                                    style = SpanStyle(
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold,
+                                        textDecoration = TextDecoration.Underline
+                                    )
+                                )
                             )
                         ) {
                             append("官网校历")
                         }
-                        pop()
                         append("进行确认。")
                     }
 
-                    ClickableText(
+                    Text(
                         text = annotatedPrompt,
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        onClick = { offset ->
-                            annotatedPrompt.getStringAnnotations(
-                                tag = "CALENDAR_URL",
-                                start = offset,
-                                end = offset
-                            ).firstOrNull()?.let {
-                                uriHandler.openUri(it.item)
-                            }
-                        }
+                        )
                     )
                 }
             },

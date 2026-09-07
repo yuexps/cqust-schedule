@@ -1,5 +1,7 @@
 package com.xingheyuzhuan.shiguangschedule.ui.settings.additional
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,20 +21,21 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.xingheyuzhuan.shiguangschedule.Destination
+import com.xingheyuzhuan.shiguangschedule.tool.clipEntryOf
 import com.xingheyuzhuan.shiguangschedule.tool.UpdateChecker
 import com.xingheyuzhuan.shiguangschedule.tool.UpdatePlatform
 import com.xingheyuzhuan.shiguangschedule.tool.UpdateStatus
@@ -82,7 +85,7 @@ fun MoreOptionsScreen(
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     val uriHandler = LocalUriHandler.current
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
 
     // 从 Koin 动态获取注入的版本号
     val appVersionName: String = koinInject(named("AppVersionName"))
@@ -117,7 +120,9 @@ fun MoreOptionsScreen(
             try {
                 uriHandler.openUri(qqWebUrl)
             } catch (_: Exception) {
-                clipboardManager.setText(AnnotatedString(QQ_GROUP_NUMBER))
+                coroutineScope.launch {
+                    clipboard.setClipEntry(clipEntryOf(QQ_GROUP_NUMBER))
+                }
                 ToastManager.show("已复制群号 $QQ_GROUP_NUMBER，请在 QQ 中搜索添加")
             }
         }
@@ -146,23 +151,30 @@ fun MoreOptionsScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // 应用信息头部
+            var titleClickCount by remember { mutableIntStateOf(0) }
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 32.dp),
+                    .padding(vertical = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                DynamicAppIconHeader(
-                    isDeveloperModeEnabled = isDeveloperModeEnabled,
-                    onTriggerDeveloperMode = { viewModel.onDeveloperModeChanged(true) }
-                )
-                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = stringResource(Res.string.app_name),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
+                    fontSize = 24.sp,
+                    modifier = Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+                        titleClickCount++
+                        if (titleClickCount >= 5) {
+                            titleClickCount = 0
+                            viewModel.onDeveloperModeChanged(true)
+                        }
+                    }
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = stringResource(Res.string.label_version_prefix, appVersionName),
                     style = MaterialTheme.typography.bodyMedium,

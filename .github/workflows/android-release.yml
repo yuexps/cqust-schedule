@@ -1,36 +1,35 @@
-name: 需要审核的发布操作
+name: 手动发布 Android Release
 
 on:
   workflow_dispatch:
     inputs:
-      build_run_id:
-        description: '请填写 Build CI 成功的 Run ID (例如：123456789)'
-        required: true
-        type: string
       version_name:
-        description: '请输入要发布的软件版本号 (例如: 1.0.0 或 2.0.0-rc1)'
-        required: true
+        description: '发布版本号 (如 3.0.0，留空则自动从 build.gradle.kts 提取)'
+        required: false
+        default: ''
+        type: string
+      release_title:
+        description: 'Release 标题 (如 重科课表 3.0.0，留空则默认为版本号)'
+        required: false
+        default: ''
+        type: string
+      release_notes:
+        description: '更新说明 (Markdown 格式，留空则自动提取近期提交记录)'
+        required: false
+        default: ''
         type: string
       is_prerelease:
-        description: '发布类型 (是否为 GitHub 预发布版本)'
-        required: true
+        description: '是否标记为预发布 (Pre-release)'
+        required: false
         default: false
         type: boolean
 
 jobs:
-  # Job 1: 准备和审核
-  prepare_review:
-    name: 准备、预检并显示发布参数
+  build-and-release:
+    name: 编译打包并发布 Release
     runs-on: ubuntu-latest
-
     permissions:
-      contents: read
-
-    outputs:
-      build_run_id_out: ${{ github.event.inputs.build_run_id }}
-      version_name_out: ${{ github.event.inputs.version_name }}
-      is_prerelease_out: ${{ github.event.inputs.is_prerelease }}
-      artifact_id_out: ${{ steps.validate_artifact.outputs.artifact_id_out }}
+      contents: write
 
     steps:
       - name: 检出代码
@@ -38,168 +37,109 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 关键参数展示 (请审核者核对)
+      - name: 确定版本号与发布信息
+        id: prepare_meta
         run: |
-          echo "--- 待审核发布参数 ---"
-          echo "版本号 (Version): ${{ github.event.inputs.version_name }}"
-          echo "GitHub Pre-release 标记: ${{ github.event.inputs.is_prerelease }}"
-          echo "基于构建 Run ID: ${{ github.event.inputs.build_run_id }}"
-          echo "------------------------"
-
-      - name: 预检：检查目标标签是否已存在
-        run: |
-          VERSION_NAME="${{ github.event.inputs.version_name }}"
-          
-          # 直接使用用户输入的版本号计算 Tag
-          if [[ "$VERSION_NAME" == v* ]]; then
-            RELEASE_TAG="$VERSION_NAME"
+          INPUT_VERSION="${{ github.event.inputs.version_name }}"
+          if [ -z "$INPUT_VERSION" ]; then
+            EXTRACTED_VERSION=$(grep 'versionName = ' androidApp/build.gradle.kts | head -n 1 | sed -E 's/.*"([^"]+)".*/\1/')
+            VERSION="$EXTRACTED_VERSION"
           else
-            RELEASE_TAG="v${VERSION_NAME}"
+            VERSION="$INPUT_VERSION"
           fi
 
-          echo "目标 Release 标签名: $RELEASE_TAG"
-          
-          # 检查标签是否存在
-          if git rev-parse --verify "refs/tags/$RELEASE_TAG" >/dev/null 2>&1; then
-             echo "严重错误：目标 Release 标签 [$RELEASE_TAG] 已存在于 Git 仓库中。"
-             echo "请修改版本号或手动删除旧标签后重试。"
-             exit 1 # 强制工作流失败
-          fi
-          echo "目标标签 [$RELEASE_TAG] 检查通过，可以创建。"
+          CLEAN_VERSION=$(echo "$VERSION" | sed 's/^[vV]//')
+          TAG_NAME="v${CLEAN_VERSION}"
 
-      - name: 预检：验证 Artifact 和源 Run 状态
-        id: validate_artifact
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const build_run_id = context.payload.inputs.build_run_id;
-            const artifactName = 'app-release-apk';
-
-            core.info(`执行预检：验证 Run ID ${build_run_id} 是否成功且包含 Artifact: ${artifactName}`);
-
-            // 1. 检查源 Run 的状态是否为 'success'
-            const sourceRun = await github.rest.actions.getWorkflowRun({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               run_id: build_run_id,
-            });
-
-            if (sourceRun.data.conclusion !== 'success') {
-                core.setFailed(`源构建 Run ID ${build_run_id} 状态为 ${sourceRun.data.conclusion}，必须是 'success' 才能发布！`);
-                return;
-            }
-            core.info(`源构建 Run 状态检查通过: ${sourceRun.data.conclusion}`);
-
-            // 2. 查找 Artifact 是否存在
-            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               run_id: build_run_id,
-            });
-
-            const matchArtifact = artifacts.data.artifacts.filter(artifact => {
-              return artifact.name === artifactName
-            })[0];
-
-            if (!matchArtifact) {
-              core.setFailed(`在 Run ID ${build_run_id} 中未找到 Artifact: ${artifactName}！请检查 Run ID 是否正确。`);
-              return;
-            }
-
-            core.info(`Artifact 存在性检查通过。Artifact ID: ${matchArtifact.id}`);
-            core.setOutput('artifact_id_out', matchArtifact.id);
-
-
-  # Job 2: 审核并发布
-  release:
-    name: 批准后执行发布到 GitHub Releases
-    runs-on: ubuntu-latest
-
-    needs: prepare_review
-    environment: Production-Release
-
-    permissions:
-      contents: write
-
-    steps:
-      - name: 检出仓库代码 (获取完整历史)
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: 计算最终标签名和 Title
-        id: compute_names
-        run: |
-          VERSION_NAME="${{ needs.prepare_review.outputs.version_name_out }}"
-          
-          # 判断用户输入是否已带 v 前缀
-          if [[ "$VERSION_NAME" == v* ]]; then
-            RELEASE_TAG="$VERSION_NAME"
+          INPUT_TITLE="${{ github.event.inputs.release_title }}"
+          if [ -z "$INPUT_TITLE" ]; then
+            TITLE="重科课表 ${TAG_NAME}"
           else
-            RELEASE_TAG="v${VERSION_NAME}"
+            TITLE="$INPUT_TITLE"
           fi
 
-          echo "Release Tag: $RELEASE_TAG"
-          echo "Release Name: $RELEASE_TAG" 
-          
-          echo "release_tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
-          echo "release_name=$RELEASE_TAG" >> $GITHUB_OUTPUT
+          echo "version=$CLEAN_VERSION" >> $GITHUB_OUTPUT
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "release_title=$TITLE" >> $GITHUB_OUTPUT
+          echo "准备发布版本: $TAG_NAME, 标题: $TITLE"
 
-      - name: 生成并获取更新日志内容
-        id: generate_changelog
-        uses: ./.github/actions/changelog-generator
+      - name: 设置 JDK 21
+        uses: actions/setup-java@v4
         with:
-          version_title: ${{ steps.compute_names.outputs.release_name }}
-          is_prerelease: ${{ needs.prepare_review.outputs.is_prerelease_out }}
+          distribution: 'temurin'
+          java-version: '21'
 
-      - name: 下载指定的 Artifact ZIP 文件
-        uses: actions/github-script@v7
-        id: download_artifact
-        with:
-          script: |
-            const artifactId = process.env.ARTIFACT_ID; 
-            const artifactName = 'app-release-apk';
-            const zipFileName = `${artifactName}.zip`; 
-            
-            core.info(`开始下载 Artifact ID: ${artifactId}`);
-            
-            const download = await github.rest.actions.downloadArtifact({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              artifact_id: artifactId, 
-              archive_format: 'zip',
-            });
-            
-            const fs = require('fs');
-            fs.writeFileSync(zipFileName, Buffer.from(download.data)); 
-            
-            core.setOutput('zip_file', zipFileName);
+      - name: 设置 Gradle 缓存
+        uses: gradle/actions/setup-gradle@v3
 
-        env:
-          ARTIFACT_ID: ${{ needs.prepare_review.outputs.artifact_id_out }}
+      - name: 赋予 Gradle Wrapper 执行权限
+        run: chmod +x ./gradlew
 
-      - name: 解压 Artifact 并设置所有 APK 路径
-        id: unzip_and_set_path
+      - name: 准备正式签名密钥 (如有配置 Secret)
         run: |
-          ARTIFACT_ZIP_FILE=${{ steps.download_artifact.outputs.zip_file }}          
-          
-          echo "开始解压文件：$ARTIFACT_ZIP_FILE"
-          mkdir -p artifacts/
-          unzip -o $ARTIFACT_ZIP_FILE -d ./artifacts/
-          
-          ALL_APKS_PATH='./artifacts/*.apk'
-          
-          echo "设置文件上传路径（通配符）：$ALL_APKS_PATH"
-          echo "artifact_path=$ALL_APKS_PATH" >> $GITHUB_OUTPUT
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "检测到云端密钥 Secret，配置签名环境变量..."
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > androidApp/release.jks
+            echo "RELEASE_STORE_FILE=${{ github.workspace }}/androidApp/release.jks" >> $GITHUB_ENV
+            echo "RELEASE_STORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+            echo "RELEASE_KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
+            echo "RELEASE_KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
+          else
+            echo "未检测到云端密钥 Secret，使用默认签名打包..."
+          fi
 
-      - name: 创建 GitHub Release (默认 Draft)
+      - name: 编译 Release APK
+        run: |
+          ./gradlew :androidApp:assembleRelease --stacktrace
+
+      - name: 收集并规范化 APK 命名
+        id: collect_apks
+        run: |
+          mkdir -p release_apks
+          VERSION="${{ steps.prepare_meta.outputs.version }}"
+
+          find androidApp/build/outputs/apk/release/ -name "*.apk" | while read -r apk_path; do
+            file_name=$(basename "$apk_path")
+            if [[ "$file_name" == *"arm64-v8a"* ]]; then
+              new_name="cqust-schedule-v${VERSION}-arm64-v8a.apk"
+            elif [[ "$file_name" == *"armeabi-v7a"* ]]; then
+              new_name="cqust-schedule-v${VERSION}-armeabi-v7a.apk"
+            elif [[ "$file_name" == *"x86_64"* ]]; then
+              new_name="cqust-schedule-v${VERSION}-x86_64.apk"
+            elif [[ "$file_name" == *"universal"* ]]; then
+              new_name="cqust-schedule-v${VERSION}-universal.apk"
+            else
+              new_name="cqust-schedule-v${VERSION}-${file_name}"
+            fi
+            cp "$apk_path" "release_apks/$new_name"
+            echo "产物就绪: $new_name"
+          done
+
+      - name: 生成发布日志
+        id: generate_notes
+        run: |
+          INPUT_NOTES="${{ github.event.inputs.release_notes }}"
+          if [ -n "$INPUT_NOTES" ]; then
+            echo "$INPUT_NOTES" > release_notes.md
+          else
+            PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+            if [ -n "$PREV_TAG" ]; then
+              echo "### 更新记录 (${PREV_TAG} ... HEAD)" > release_notes.md
+              git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" >> release_notes.md
+            else
+              echo "### 更新记录" > release_notes.md
+              git log -n 10 --pretty=format:"- %s (%h)" >> release_notes.md
+            fi
+          fi
+
+      - name: 发布到 GitHub Releases
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.compute_names.outputs.release_tag }}
-          name: ${{ steps.compute_names.outputs.release_name }}
-          body: ${{ steps.generate_changelog.outputs.changelog_content }}
-          draft: true
-          prerelease: ${{ needs.prepare_review.outputs.is_prerelease_out == 'true' }}
-          files: ${{ steps.unzip_and_set_path.outputs.artifact_path }}
+          tag_name: ${{ steps.prepare_meta.outputs.tag_name }}
+          name: ${{ steps.prepare_meta.outputs.release_title }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: ${{ github.event.inputs.is_prerelease == 'true' }}
+          files: release_apks/*.apk
