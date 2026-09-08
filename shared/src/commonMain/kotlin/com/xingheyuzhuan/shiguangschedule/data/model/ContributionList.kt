@@ -13,7 +13,7 @@ data class ContributionList(
     val appDev: List<Contributor>,
 
     @SerialName("jiaowu_adapter")
-    val jiaowuadapter: List<Contributor>
+    val jiaowuadapter: List<Contributor> = emptyList()
 ) {
     /**
      * 单个贡献者基础信息数据结构。
