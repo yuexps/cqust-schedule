@@ -89,7 +89,9 @@ class CqustSyncManager(
                 semesterId = result.semesterId ?: "561"
             )
 
-            Result.success(result.courses.size)
+            // 返回按课程名称去重后的实际课程门数
+            val distinctCourseCount = result.courses.map { it.name }.distinct().size
+            Result.success(distinctCourseCount)
         } catch (e: Exception) {
             Result.failure(Exception("课表数据解析入库失败: ${e.message}", e))
         }

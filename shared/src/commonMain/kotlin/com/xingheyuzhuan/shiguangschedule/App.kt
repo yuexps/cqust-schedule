@@ -25,9 +25,6 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.xingheyuzhuan.shiguangschedule.data.model.StartScreen
 import com.xingheyuzhuan.shiguangschedule.ui.schedule.WeeklyScheduleScreen
-import com.xingheyuzhuan.shiguangschedule.ui.schoolselection.list.AdapterSelectionScreen
-import com.xingheyuzhuan.shiguangschedule.ui.schoolselection.list.SchoolSelectionListScreen
-import com.xingheyuzhuan.shiguangschedule.ui.schoolselection.web.WebViewScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.SettingsScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.SettingsViewModel
 import com.xingheyuzhuan.shiguangschedule.ui.settings.additional.LanguageSettingScreen
@@ -47,7 +44,6 @@ import com.xingheyuzhuan.shiguangschedule.ui.settings.quickactions.tweaks.TweakS
 import com.xingheyuzhuan.shiguangschedule.ui.settings.style.StyleSettingsScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.themesettings.ThemeSettingsScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.time.TimeSlotManagementScreen
-import com.xingheyuzhuan.shiguangschedule.ui.settings.update.UpdateRepoScreen
 import com.xingheyuzhuan.shiguangschedule.ui.theme.ShiguangScheduleTheme
 import com.xingheyuzhuan.shiguangschedule.ui.today.TodayScheduleScreen
 import androidx.compose.runtime.LaunchedEffect
@@ -195,15 +191,10 @@ fun ScreenContent(
         Destination.TodaySchedule -> TodayScheduleScreen(onNavigate, onBack)
         Destination.TimeSlotSettings -> TimeSlotManagementScreen(onBack)
         Destination.ManageCourseTables -> ManageCourseTablesScreen(onBack)
-        Destination.SchoolSelectionListScreen -> CqustLoginScreen(
-            onLoginSuccess = { onNavigate(Destination.CourseSchedule) },
-            onBack = onBack
-        )
         Destination.CourseTableConversion -> CourseTableConversionScreen(onNavigate, onBack)
         Destination.NotificationSettings -> NotificationSettingsScreen(onBack)
         Destination.MoreOptions -> MoreOptionsScreen(onNavigate, onBack)
         Destination.OpenSourceLicenses -> OpenSourceLicensesScreen(onBack)
-        Destination.UpdateRepo -> UpdateRepoScreen(onBack)
         Destination.QuickActions -> QuickActionsScreen(onNavigate, onBack)
         Destination.TweakSchedule -> TweakScheduleScreen(onBack)
         Destination.ContributionList -> ContributionScreen(onBack)
@@ -218,13 +209,6 @@ fun ScreenContent(
             onBack = if (isLoggedIn) onBack else null
         )
 
-        is Destination.AdapterSelection -> CqustLoginScreen(
-            onLoginSuccess = { onNavigate(Destination.CourseSchedule) },
-            onBack = onBack
-        )
-        is Destination.WebView -> WebViewScreen(
-            onNavigate, onBack, targetDest.initialUrl, targetDest.assetJsPath
-        )
         is Destination.AddEditCourse -> AddEditCourseScreen(
             onBack, targetDest.courseId
         )

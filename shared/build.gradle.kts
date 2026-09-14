@@ -18,18 +18,6 @@ kotlin {
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
-    listOf(
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "Shared"
-            isStatic = true
-        }
-    }
-
-    jvm()
-
     android {
         namespace = "com.xingheyuzhuan.shiguangschedule.shared"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -89,7 +77,6 @@ kotlin {
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kotlinx.serialization.cbor)
                 implementation(libs.kotlinx.datetime)
-                implementation(libs.kgit)
                 implementation(libs.okio)
 
                 // Ktor 核心网络库
@@ -115,16 +102,6 @@ kotlin {
             implementation(libs.ktor.client.cio)
         }
 
-        jvmMain.dependencies {
-            implementation(libs.androidx.sqlite.bundled)
-            implementation(libs.ktor.client.cio)
-        }
-
-        iosMain.dependencies {
-            implementation(libs.androidx.sqlite.framework)
-            implementation(libs.ktor.client.darwin)
-        }
-
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
@@ -134,9 +111,6 @@ kotlin {
 dependencies {
     androidRuntimeClasspath(libs.compose.ui.tooling)
     add("kspAndroid", libs.androidx.room3.compiler)
-    add("kspJvm", libs.androidx.room3.compiler)
-    add("kspIosArm64", libs.androidx.room3.compiler)
-    add("kspIosSimulatorArm64", libs.androidx.room3.compiler)
 }
 
 // 导出第三方依赖许可信息
@@ -168,16 +142,6 @@ wire {
     }
 }
 
-// 打包离线资源 Task
-val packSchoolsZip = tasks.register<Zip>("packSchoolsZip") {
-    group = "build"
-    description = "将离线适配资源打包为 composeResources ZIP 资源文件。"
-
-    from(layout.projectDirectory.dir("assets/offline_repo"))
-    destinationDirectory.set(layout.projectDirectory.dir("src/commonMain/composeResources/files"))
-    archiveFileName.set("offline_schools.zip")
-}
-
 // 绑定生成 Task 至 Compose Resources 编译生命周期
 val exportLibraryDefinitions = tasks.named("exportLibraryDefinitions")
 
@@ -186,6 +150,5 @@ tasks.matching {
             it.name.startsWith("copyNonXmlValueResources") ||
             it.name.startsWith("prepareComposeResources")
 }.configureEach {
-    dependsOn(packSchoolsZip)
     dependsOn(exportLibraryDefinitions)
 }

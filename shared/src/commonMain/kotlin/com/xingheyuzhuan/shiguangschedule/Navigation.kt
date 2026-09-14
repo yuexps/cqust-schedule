@@ -7,7 +7,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
-import kotlin.reflect.KClass
 
 /**
  * 导航元数据 Key 定义
@@ -33,12 +32,10 @@ sealed interface Destination : NavKey {
     // --- 二级功能页面 ---
     @Serializable data object TimeSlotSettings : Destination
     @Serializable data object ManageCourseTables : Destination
-    @Serializable data object SchoolSelectionListScreen : Destination
     @Serializable data object CourseTableConversion : Destination
     @Serializable data object NotificationSettings : Destination
     @Serializable data object MoreOptions : Destination
     @Serializable data object OpenSourceLicenses : Destination
-    @Serializable data object UpdateRepo : Destination
     @Serializable data object QuickActions : Destination
     @Serializable data object TweakSchedule : Destination
     @Serializable data object QuickDelete : Destination
@@ -51,20 +48,6 @@ sealed interface Destination : NavKey {
     @Serializable data object CqustLogin : Destination
 
     // --- 动态传参页面 ---
-    @Serializable
-    data class AdapterSelection(
-        val schoolId: String,
-        val schoolName: String,
-        val categoryNumber: Int,
-        val resourceFolder: String
-    ) : Destination
-
-    @Serializable
-    data class WebView(
-        val initialUrl: String? = "about:blank",
-        val assetJsPath: String? = null
-    ) : Destination
-
     @Serializable
     data class AddEditCourse(
         val courseId: String? = null
@@ -92,12 +75,10 @@ val navSerializersModule = SerializersModule {
         // 普通功能页面
         subclass(Destination.TimeSlotSettings::class)
         subclass(Destination.ManageCourseTables::class)
-        subclass(Destination.SchoolSelectionListScreen::class)
         subclass(Destination.CourseTableConversion::class)
         subclass(Destination.NotificationSettings::class)
         subclass(Destination.MoreOptions::class)
         subclass(Destination.OpenSourceLicenses::class)
-        subclass(Destination.UpdateRepo::class)
         subclass(Destination.QuickActions::class)
         subclass(Destination.TweakSchedule::class)
         subclass(Destination.QuickDelete::class)
@@ -110,8 +91,6 @@ val navSerializersModule = SerializersModule {
         subclass(Destination.CqustLogin::class)
 
         // 带参数据类
-        subclass(Destination.AdapterSelection::class)
-        subclass(Destination.WebView::class)
         subclass(Destination.AddEditCourse::class)
         subclass(Destination.CourseManagementDetail::class)
     }
