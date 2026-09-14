@@ -2,6 +2,7 @@ package com.xingheyuzhuan.shiguangschedule.data.api.cqust
 
 import com.xingheyuzhuan.shiguangschedule.data.model.CourseImportExport
 import com.xingheyuzhuan.shiguangschedule.tool.cqustTripleDesEncrypt
+import com.xingheyuzhuan.shiguangschedule.ui.components.ToastManager
 import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -17,7 +18,9 @@ data class CqustImportResult(
     val studentId: String? = null,
     val semesterId: String? = null,
     val courses: List<CourseImportExport.ImportCourseJsonModel> = emptyList(),
-    val timeSlots: List<CourseImportExport.TimeSlotJsonModel> = defaultCqustTimeSlots
+    val timeSlots: List<CourseImportExport.TimeSlotJsonModel> = defaultCqustTimeSlots,
+    val statusCode: Int? = null,
+    val isTimeout: Boolean = false
 )
 
 /**
@@ -51,8 +54,9 @@ object CqustEamsImporter {
     private val httpClient = HttpClient {
         followRedirects = false
         install(HttpTimeout) {
-            requestTimeoutMillis = 10000
-            connectTimeoutMillis = 5000
+            requestTimeoutMillis = 15000
+            connectTimeoutMillis = 8000
+            socketTimeoutMillis = 15000
         }
     }
 
@@ -62,10 +66,19 @@ object CqustEamsImporter {
     suspend fun loginAndFetchCourses(
         studentId: String,
         passwordRaw: String,
-        targetSemesterId: String? = null
+        targetSemesterId: String? = null,
+        notifyFallback: Boolean = true
     ): CqustImportResult {
         var lastResult = CqustImportResult(false, "教务系统连接失败")
-        for (baseUrl in BASE_URLS) {
+        for ((index, baseUrl) in BASE_URLS.withIndex()) {
+            if (index > 0 && notifyFallback) {
+                val reason = when {
+                    lastResult.statusCode != null -> "异常(${lastResult.statusCode})"
+                    lastResult.isTimeout -> "超时"
+                    else -> "失败"
+                }
+                ToastManager.show("IPv6 $reason，切换 IPv4 尝试中...")
+            }
             lastResult = fetchCourses(baseUrl, studentId, passwordRaw, targetSemesterId)
             if (lastResult.success || lastResult.errorMessage?.contains("密码") == true) {
                 return lastResult
@@ -109,9 +122,16 @@ object CqustEamsImporter {
                 }
             }
 
-            // 1. 获取登录页并提取动态 salt 密钥
+            // 1. 获取登录页并检测是否返回 200 OK
             val loginPageResp = httpClient.get("$baseUrl/login.action?cqustadminweb=1") {
                 applyCommonHeaders()
+            }
+            if (loginPageResp.status != HttpStatusCode.OK) {
+                return CqustImportResult(
+                    success = false,
+                    errorMessage = "教务登录页无法正常访问(HTTP ${loginPageResp.status.value})",
+                    statusCode = loginPageResp.status.value
+                )
             }
             updateCookies(loginPageResp)
             val loginPageHtml = loginPageResp.bodyAsText()
@@ -205,7 +225,14 @@ object CqustEamsImporter {
                 timeSlots = defaultCqustTimeSlots
             )
         } catch (e: Exception) {
-            CqustImportResult(false, "导入过程发生异常: ${e.message}")
+            val isTimeout = e is HttpRequestTimeoutException ||
+                    e::class.simpleName?.contains("Timeout", ignoreCase = true) == true ||
+                    e.message?.contains("timeout", ignoreCase = true) == true
+            CqustImportResult(
+                success = false,
+                errorMessage = if (isTimeout) "网络连接超时" else "导入过程发生异常: ${e.message}",
+                isTimeout = isTimeout
+            )
         }
     }
 

@@ -30,11 +30,13 @@ class CqustSyncManager(
      *
      * @param studentId 学号
      * @param passwordRaw 密码
+     * @param isSilent 是否为后台静默同步
      * @return 成功返回导入的课程门数，失败返回异常
      */
     suspend fun syncCourses(
         studentId: String,
-        passwordRaw: String
+        passwordRaw: String,
+        isSilent: Boolean = false
     ): Result<Int> = withContext(Dispatchers.IO) {
         val sid = studentId.trim()
         val pwd = passwordRaw.trim()
@@ -47,7 +49,11 @@ class CqustSyncManager(
         }
 
         // 调用树维教务接口
-        val result = CqustEamsImporter.loginAndFetchCourses(sid, pwd)
+        val result = CqustEamsImporter.loginAndFetchCourses(
+            studentId = sid,
+            passwordRaw = pwd,
+            notifyFallback = !isSilent
+        )
         if (!result.success) {
             return@withContext Result.failure(
                 Exception(result.errorMessage ?: "教务登录或课表获取失败，请检查账号密码或校园网络")
@@ -124,7 +130,11 @@ class CqustSyncManager(
                 return@withContext Result.success(false)
             }
 
-            val syncResult = syncCourses(settings.cqustStudentId, settings.cqustPassword)
+            val syncResult = syncCourses(
+                studentId = settings.cqustStudentId,
+                passwordRaw = settings.cqustPassword,
+                isSilent = true
+            )
             if (syncResult.isSuccess) {
                 appSettingsRepository.updateCqustLastSyncTime(now)
                 Result.success(true)
