@@ -300,4 +300,22 @@ class AppSettingsRepository(
             preferences[AppSettingsModel.KEY_CQUST_LAST_SYNC_TIME] = 0L
         }
     }
+
+    /**
+     * 更新是否开启课表更新后自动同步至系统日历
+     */
+    suspend fun updateAutoSyncToCalendar(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[AppSettingsModel.KEY_AUTO_SYNC_TO_CALENDAR] = enabled
+        }
+    }
+
+    /**
+     * 更新系统日历提前提醒分钟数
+     */
+    suspend fun updateCalendarRemindBeforeMinutes(minutes: Int) {
+        dataStore.edit { preferences ->
+            preferences[AppSettingsModel.KEY_CALENDAR_REMIND_BEFORE_MINUTES] = minutes
+        }
+    }
 }

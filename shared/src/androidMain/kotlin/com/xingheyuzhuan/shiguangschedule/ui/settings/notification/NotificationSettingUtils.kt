@@ -51,24 +51,59 @@ fun hasDndPermission(context: Context): Boolean {
 // --- 系统设置页面跳转 ---
 
 /**
- * 打开精确闹钟权限设置页
+ * 打开当前应用的系统通知设置页
+ */
+fun openAppNotificationSettings(context: Context) {
+    val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+            putExtra("android.provider.extra.APP_PACKAGE", context.packageName)
+            putExtra("app_package", context.packageName)
+            putExtra("app_uid", context.applicationInfo.uid)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+    } else {
+        Intent(
+            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            "package:${context.packageName}".toUri()
+        ).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+    }
+    safelyStartActivity(context, intent) { openAppSettings(context) }
+}
+
+/**
+ * 打开精确闹钟权限设置页（优先直达本应用开关页）
  */
 fun openExactAlarmSettings(context: Context) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+        val intent = Intent(
+            Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+            "package:${context.packageName}".toUri()
+        ).apply {
+            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
-        safelyStartActivity(context, intent) { openAppSettings(context) }
+        safelyStartActivity(context, intent) {
+            val fallback = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            safelyStartActivity(context, fallback) { openAppSettings(context) }
+        }
     } else {
         openAppSettings(context)
     }
 }
 
 /**
- * 打开勿扰权限设置页
+ * 打开勿扰权限设置页（优先携带包名参数定位本应用）
  */
 fun openDndSettings(context: Context) {
     val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS).apply {
+        putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+        putExtra("android.provider.extra.APP_PACKAGE", context.packageName)
+        putExtra("package", context.packageName)
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
     safelyStartActivity(context, intent) { openAppSettings(context) }

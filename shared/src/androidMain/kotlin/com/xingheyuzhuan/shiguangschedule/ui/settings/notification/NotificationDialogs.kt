@@ -88,6 +88,23 @@ fun NotificationDialogDispatcher(
             )
         }
 
+        is NotificationDialogType.EditCalendarRemindMinutes -> {
+            var tempInput by remember(uiState.calendarRemindBeforeMinutes) {
+                mutableStateOf(uiState.calendarRemindBeforeMinutes.toString())
+            }
+            EditRemindMinutesDialog(
+                title = "设置日历提前提醒时间",
+                supportingText = "输入 0 为准时提醒（单位：分钟）",
+                currentMinutes = tempInput,
+                onMinutesChange = { tempInput = it.filter { c -> c.isDigit() } },
+                onConfirm = {
+                    val mins = tempInput.toIntOrNull() ?: 15
+                    viewModel.updateCalendarRemindBeforeMinutes(mins)
+                },
+                onDismiss = { viewModel.dismissDialog() }
+            )
+        }
+
         is NotificationDialogType.AutoModeSelection -> {
             AutoModeSelectionDialog(
                 currentAutoModeEnabled = uiState.autoModeEnabled,
@@ -252,6 +269,8 @@ fun AutoModeSelectionDialog(
 
 @Composable
 fun EditRemindMinutesDialog(
+    title: String = stringResource(Res.string.dialog_title_set_remind_time),
+    supportingText: String? = null,
     currentMinutes: String,
     onMinutesChange: (String) -> Unit,
     onConfirm: () -> Unit,
@@ -259,16 +278,26 @@ fun EditRemindMinutesDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(Res.string.dialog_title_set_remind_time)) },
+        title = { Text(title) },
         text = {
-            OutlinedTextField(
-                value = currentMinutes,
-                onValueChange = onMinutesChange,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                label = { Text(stringResource(Res.string.label_minutes_input)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = currentMinutes,
+                    onValueChange = onMinutesChange,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    label = { Text(stringResource(Res.string.label_minutes_input)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                if (!supportingText.isNullOrBlank()) {
+                    Text(
+                        text = supportingText,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                        modifier = Modifier.padding(top = 8.dp, start = 4.dp)
+                    )
+                }
+            }
         },
         confirmButton = {
             Button(onClick = onConfirm) { Text(stringResource(Res.string.action_confirm)) }

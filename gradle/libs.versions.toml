@@ -2,7 +2,7 @@
 # 构建与 SDK 版本
 agp = "9.3.1"
 android-compileSdk = "37"
-android-minSdk = "26"
+android-minSdk = "30"
 android-targetSdk = "37"
 kotlin = "2.4.0"
 ksp = "2.3.10"

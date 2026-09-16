@@ -136,6 +136,12 @@ data class AppSettingsModel(
 
     /** 上次自动检查更新的时间戳 (毫秒) */
     val lastUpdateCheckTime: Long = 0L,
+
+    /** 是否开启课表更新后自动同步至系统日历 */
+    val autoSyncToCalendar: Boolean = false,
+
+    /** 系统日历提前提醒分钟数（默认 15 分钟） */
+    val calendarRemindBeforeMinutes: Int = 15,
 ) {
     /**
      * 将 DataStore 的 Key 定义在伴生对象中。
@@ -163,6 +169,8 @@ data class AppSettingsModel(
         val KEY_CQUST_LAST_SYNC_TIME = longPreferencesKey("cqust_last_sync_time")
         val KEY_AUTO_CHECK_UPDATE_ENABLED = booleanPreferencesKey("auto_check_update_enabled")
         val KEY_LAST_UPDATE_CHECK_TIME = longPreferencesKey("last_update_check_time")
+        val KEY_AUTO_SYNC_TO_CALENDAR = booleanPreferencesKey("auto_sync_to_calendar")
+        val KEY_CALENDAR_REMIND_BEFORE_MINUTES = intPreferencesKey("calendar_remind_before_minutes")
 
         /**
          * 从 Preferences 中解析出 AppSettingsModel
@@ -190,6 +198,8 @@ data class AppSettingsModel(
                 cqustLastSyncTime = prefs[KEY_CQUST_LAST_SYNC_TIME] ?: d.cqustLastSyncTime,
                 autoCheckUpdateEnabled = prefs[KEY_AUTO_CHECK_UPDATE_ENABLED] ?: d.autoCheckUpdateEnabled,
                 lastUpdateCheckTime = prefs[KEY_LAST_UPDATE_CHECK_TIME] ?: d.lastUpdateCheckTime,
+                autoSyncToCalendar = prefs[KEY_AUTO_SYNC_TO_CALENDAR] ?: d.autoSyncToCalendar,
+                calendarRemindBeforeMinutes = prefs[KEY_CALENDAR_REMIND_BEFORE_MINUTES] ?: d.calendarRemindBeforeMinutes,
             )
         }
     }

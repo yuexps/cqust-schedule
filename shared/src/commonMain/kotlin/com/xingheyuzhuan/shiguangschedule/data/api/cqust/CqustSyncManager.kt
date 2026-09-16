@@ -88,6 +88,14 @@ class CqustSyncManager(
             courseConversionRepository.importCoursesFromList(tableId, result.courses)
             courseConversionRepository.importTimeSlots(tableId, result.timeSlots)
 
+            // 若开启自动同步至系统日历，自动刷新系统日历日程
+            val latestSettings = appSettingsRepository.getAppSettingsOnce()
+            if (latestSettings.autoSyncToCalendar) {
+                runCatching {
+                    courseConversionRepository.syncCurrentTableToSystemCalendar()
+                }
+            }
+
             // 默认自动记住密码，保存重科登录凭证并刷新最后同步时间
             appSettingsRepository.updateCqustLoginInfo(
                 studentId = sid,

@@ -432,11 +432,6 @@ private fun AdvancedSettingsSection(onNavigate: (Destination) -> Unit) {
                 fontWeight = FontWeight.SemiBold
             )
             SettingItem(
-                title = "课表导出",
-                subtitle = "导出为 JSON/ICS 日历文件或同步至系统日历",
-                onClick = { onNavigate(Destination.CourseTableConversion) }
-            )
-            SettingItem(
                 title = stringResource(Res.string.title_course_notification_settings),
                 subtitle = stringResource(Res.string.desc_notification_settings),
                 onClick = { onNavigate(Destination.NotificationSettings) }
@@ -450,6 +445,11 @@ private fun AdvancedSettingsSection(onNavigate: (Destination) -> Unit) {
                 title = stringResource(Res.string.item_personalization),
                 subtitle = stringResource(Res.string.desc_personalization),
                 onClick = { onNavigate(Destination.StyleSettings) }
+            )
+            SettingItem(
+                title = "课表导出",
+                subtitle = "导出为 JSON 或 ICS 日历文件",
+                onClick = { onNavigate(Destination.CourseTableConversion) }
             )
             SettingItem(
                 title = stringResource(Res.string.item_more_options),

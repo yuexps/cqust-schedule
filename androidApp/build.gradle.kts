@@ -28,8 +28,8 @@ android {
         applicationId = "yuexps.cqust.schedule"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 41
-        versionName = "3.1.0"
+        versionCode = 42
+        versionName = "3.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

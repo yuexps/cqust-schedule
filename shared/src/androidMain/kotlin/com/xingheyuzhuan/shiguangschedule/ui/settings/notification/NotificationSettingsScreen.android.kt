@@ -37,6 +37,7 @@ actual fun PlatformGeneralSettingsSection(
     val notificationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
+        viewModel.updateNotificationPermissionStatus(isGranted)
         if (!isGranted) {
             ToastManager.show(permissionDeniedMessage)
         }
@@ -48,6 +49,7 @@ actual fun PlatformGeneralSettingsSection(
             if (event == Lifecycle.Event.ON_RESUME) {
                 viewModel.updateExactAlarmStatus(hasExactAlarmPermission(context))
                 viewModel.updateDndPermissionStatus(hasDndPermission(context))
+                viewModel.updateNotificationPermissionStatus(hasNotificationPermission(context))
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -59,6 +61,7 @@ actual fun PlatformGeneralSettingsSection(
 
     // 页面首次挂载时在 Android 13+ 平台上按需发起通知权限申请
     LaunchedEffect(Unit) {
+        viewModel.updateNotificationPermissionStatus(hasNotificationPermission(context))
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !hasNotificationPermission(context)) {
             notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
@@ -74,6 +77,18 @@ actual fun PlatformGeneralSettingsSection(
     }
 
     val enableReminderToast = stringResource(Res.string.toast_enable_reminder_first)
+
+    // 系统日历权限启动器与回调
+    val syncCalendarLauncher = com.xingheyuzhuan.shiguangschedule.tool.rememberCalendarPermissionLauncher {
+        viewModel.syncToSystemCalendar { success ->
+            ToastManager.show(if (success) "同步至系统日历成功" else "同步失败，请检查课表或重试")
+        }
+    }
+
+    val toggleAutoSyncLauncher = com.xingheyuzhuan.shiguangschedule.tool.rememberCalendarPermissionLauncher {
+        viewModel.updateAutoSyncToCalendar(true)
+        ToastManager.show("已开启课表更新时自动同步日历")
+    }
 
     GeneralSettingsCard(
         uiState = uiState,
@@ -93,7 +108,21 @@ actual fun PlatformGeneralSettingsSection(
         },
         onRemindTimeClick = { viewModel.showDialog(NotificationDialogType.EditRemindMinutes) },
         onAppSettingsClick = { openAppSettings(context) },
-        onBatteryOptimizationClick = { openIgnoreBatteryOptimizationSettings(context) }
+        onBatteryOptimizationClick = { openIgnoreBatteryOptimizationSettings(context) },
+        onSyncCalendarClick = { syncCalendarLauncher() },
+        onAutoSyncCalendarToggle = { isEnabled ->
+            if (isEnabled) {
+                toggleAutoSyncLauncher()
+            } else {
+                viewModel.updateAutoSyncToCalendar(false)
+            }
+        },
+        onCalendarRemindTimeClick = {
+            viewModel.showDialog(NotificationDialogType.EditCalendarRemindMinutes)
+        },
+        onNotificationPermissionClick = {
+            openAppNotificationSettings(context)
+        }
     )
 }
 

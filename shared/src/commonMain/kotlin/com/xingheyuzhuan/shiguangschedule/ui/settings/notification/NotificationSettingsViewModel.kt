@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.xingheyuzhuan.shiguangschedule.data.model.AutoControlMode
 import com.xingheyuzhuan.shiguangschedule.data.repository.AppSettingsRepository
+import com.xingheyuzhuan.shiguangschedule.data.repository.CourseConversionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,6 +18,7 @@ import org.koin.core.annotation.KoinViewModel
 sealed interface NotificationDialogType {
     data object None : NotificationDialogType
     data object EditRemindMinutes : NotificationDialogType
+    data object EditCalendarRemindMinutes : NotificationDialogType
     data object AutoModeSelection : NotificationDialogType
     data object ClearConfirmation : NotificationDialogType
     data object ViewSkippedDates : NotificationDialogType
@@ -27,6 +29,7 @@ sealed interface NotificationDialogType {
  *
  * @property reminderEnabled 课程提醒开关
  * @property remindBeforeMinutes 提前提醒分钟数
+ * @property calendarRemindBeforeMinutes 系统日历提前提醒分钟数
  * @property skippedDates 跳过的节假日日期集合
  * @property isLoading 是否正在加载或导入数据
  * @property exactAlarmStatus 系统精确闹钟权限允许状态
@@ -34,18 +37,24 @@ sealed interface NotificationDialogType {
  * @property autoModeEnabled 自动模式（勿扰/静音）开关
  * @property autoControlMode 自动控制模式类型
  * @property compatWearableSync 穿戴设备兼容同步开关
+ * @property autoSyncToCalendar 课表更新后自动同步至系统日历
+ * @property isSyncingCalendar 当前是否正在执行日历同步
  * @property activeDialog 当前展示的弹窗类型
  */
 data class NotificationSettingsUiState(
     val reminderEnabled: Boolean = false,
     val remindBeforeMinutes: Int = 15,
+    val calendarRemindBeforeMinutes: Int = 15,
     val skippedDates: Set<String> = emptySet(),
     val isLoading: Boolean = false,
     val exactAlarmStatus: Boolean = false,
     val dndPermissionStatus: Boolean = false,
+    val notificationPermissionStatus: Boolean = true,
     val autoModeEnabled: Boolean = false,
     val autoControlMode: AutoControlMode = AutoControlMode.DND,
     val compatWearableSync: Boolean = false,
+    val autoSyncToCalendar: Boolean = false,
+    val isSyncingCalendar: Boolean = false,
     val activeDialog: NotificationDialogType = NotificationDialogType.None
 )
 
@@ -56,7 +65,8 @@ data class NotificationSettingsUiState(
  */
 @KoinViewModel
 class NotificationSettingsViewModel(
-    private val appSettingsRepository: AppSettingsRepository
+    private val appSettingsRepository: AppSettingsRepository,
+    private val courseConversionRepository: CourseConversionRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NotificationSettingsUiState())
@@ -75,10 +85,12 @@ class NotificationSettingsViewModel(
                 _uiState.value = _uiState.value.copy(
                     reminderEnabled = settings.reminderEnabled,
                     remindBeforeMinutes = settings.remindBeforeMinutes,
+                    calendarRemindBeforeMinutes = settings.calendarRemindBeforeMinutes,
                     skippedDates = settings.skippedDates,
                     autoModeEnabled = settings.autoModeEnabled,
                     autoControlMode = settings.autoControlMode,
-                    compatWearableSync = settings.compatWearableSync
+                    compatWearableSync = settings.compatWearableSync,
+                    autoSyncToCalendar = settings.autoSyncToCalendar
                 )
             }
         }
@@ -113,6 +125,13 @@ class NotificationSettingsViewModel(
     }
 
     /**
+     * 更新系统通知权限允许状态
+     */
+    fun updateNotificationPermissionStatus(hasPermission: Boolean) {
+        _uiState.value = _uiState.value.copy(notificationPermissionStatus = hasPermission)
+    }
+
+    /**
      * 更新课程提醒开关状态
      */
     fun updateReminderEnabled(isEnabled: Boolean) {
@@ -139,6 +158,16 @@ class NotificationSettingsViewModel(
         viewModelScope.launch {
             val currentSettings = appSettingsRepository.getAppSettings().first()
             appSettingsRepository.insertOrUpdateAppSettings(currentSettings.copy(remindBeforeMinutes = minutes))
+            dismissDialog()
+        }
+    }
+
+    /**
+     * 保存系统日历提前提醒分钟数并关闭弹窗
+     */
+    fun updateCalendarRemindBeforeMinutes(minutes: Int) {
+        viewModelScope.launch {
+            appSettingsRepository.updateCalendarRemindBeforeMinutes(minutes)
             dismissDialog()
         }
     }
@@ -172,6 +201,30 @@ class NotificationSettingsViewModel(
             }
             if (result.isSuccess) dismissDialog()
             onResult(result)
+        }
+    }
+
+    /**
+     * 更新是否开启课表更新后自动同步至系统日历
+     */
+    fun updateAutoSyncToCalendar(enabled: Boolean) {
+        viewModelScope.launch {
+            appSettingsRepository.updateAutoSyncToCalendar(enabled)
+        }
+    }
+
+    /**
+     * 手动触发同步当前课表至系统日历
+     */
+    fun syncToSystemCalendar(onResult: (Boolean) -> Unit) {
+        if (_uiState.value.isSyncingCalendar) return
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isSyncingCalendar = true)
+            val success = runCatching {
+                courseConversionRepository.syncCurrentTableToSystemCalendar()
+            }.getOrDefault(false)
+            _uiState.value = _uiState.value.copy(isSyncingCalendar = false)
+            onResult(success)
         }
     }
 }

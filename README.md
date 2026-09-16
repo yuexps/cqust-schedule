@@ -5,7 +5,7 @@
 一款为**重庆科技大学**校友制作的开源、无广告、极简课程表 APP。
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL_v3-blue.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Android_8.0+-green.svg)](https://github.com/yuexps/cqust-schedule)
+[![Platform](https://img.shields.io/badge/Platform-Android_11.0+-green.svg)](https://github.com/yuexps/cqust-schedule)
 
 </div>
 
@@ -29,7 +29,7 @@
 
 ## 快速上手
 
-1. **安装**：在 Release 页面下载最新的 APK 安装包（支持 Android 8.0 及以上）。
+1. **安装**：在 Release 页面下载最新的 APK 安装包（支持 Android 11 及以上）。
 2. **登录**：首次启动进入登录界面，输入重庆科技大学教务系统的学号与密码，点击“登录”。
 3. **使用**：系统将自动拉取本学期课程并完成时间排布，直接进入主课表。
 4. **重新同步**：在“我的”页面可随时查看已绑定学号，支持一键重新同步课表与退出登录。

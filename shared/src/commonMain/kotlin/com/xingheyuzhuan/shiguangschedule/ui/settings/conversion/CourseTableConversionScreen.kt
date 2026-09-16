@@ -39,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import com.xingheyuzhuan.shiguangschedule.Destination
 import com.xingheyuzhuan.shiguangschedule.data.di.AppStorage
 import com.xingheyuzhuan.shiguangschedule.tool.FileManagerCallbacks
-import com.xingheyuzhuan.shiguangschedule.tool.rememberCalendarPermissionLauncher
 import com.xingheyuzhuan.shiguangschedule.tool.rememberFileManager
 import com.xingheyuzhuan.shiguangschedule.ui.components.ShareDialog
 import kotlinx.coroutines.launch
@@ -97,10 +96,6 @@ fun CourseTableConversionScreen(
     var pendingShareFilePath by remember { mutableStateOf<String?>(null) }
     var shareFilePath by remember { mutableStateOf<String?>(null) }
     var shareFileMimeType by remember { mutableStateOf("application/json") }
-
-    val syncToCalendarWithPermission = rememberCalendarPermissionLauncher {
-        viewModel.onSyncToCalendarClick()
-    }
 
     val fileManager = rememberFileManager(
         callbacks = FileManagerCallbacks(
@@ -173,7 +168,7 @@ fun CourseTableConversionScreen(
         topBar = {
             Column {
                 TopAppBar(
-                    title = { Text("课表导出与同步") },
+                    title = { Text("课表导出") },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
                             Icon(
@@ -225,23 +220,6 @@ fun CourseTableConversionScreen(
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
-
-            Text(stringResource(Res.string.section_sync), style = MaterialTheme.typography.titleLarge, modifier = Modifier.fillMaxWidth())
-            Spacer(Modifier.height(8.dp))
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    ConversionRow(
-                        title = stringResource(Res.string.item_sync_to_system_calendar),
-                        desc = stringResource(Res.string.desc_sync_to_system_calendar),
-                        onClick = syncToCalendarWithPermission
-                    )
-                }
-            }
             Spacer(Modifier.height(32.dp))
         }
     }

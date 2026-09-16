@@ -503,7 +503,7 @@ class CourseConversionRepository(
         if (currentTableId.isEmpty()) return true
 
         val courses = courseDao.getCoursesWithWeeksByTableId(currentTableId).first()
-        val alarmMinutes = appSettings.remindBeforeMinutes
+        val alarmMinutes = appSettings.calendarRemindBeforeMinutes
         val courseConfig = appSettingsRepository.getCourseConfigOnce(currentTableId)
 
         val semesterStartDate = courseConfig?.semesterStartDate?.let {

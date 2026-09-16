@@ -49,7 +49,7 @@ fun NotificationSettingsScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = 16.dp)
+            contentPadding = PaddingValues(top = 8.dp, bottom = 24.dp)
         ) {
             // 常规卡片由于各平台差异巨大，采用 expect 隔离由各平台自行实现
             item {
