@@ -100,10 +100,40 @@ class CourseConversionRepository(
         }
     }
 
+    private fun createAutoColorProvider(
+        existingColorMap: Map<String, Int>,
+        nameToColorMap: MutableMap<String, Int>,
+        colorSize: Int
+    ): () -> Int {
+        val isExistingTable = existingColorMap.isNotEmpty()
+        var colorOffset = if (colorSize > 0) Random.nextInt(colorSize) else 0
+
+        return {
+            if (colorSize <= 0) {
+                0
+            } else if (isExistingTable) {
+                // 更新课表：优先从未占用颜色池分配，避免撞色且保持稳定
+                val usedColors = nameToColorMap.values.toSet()
+                val availableColors = (0 until colorSize).filter { it !in usedColors }
+                if (availableColors.isNotEmpty()) {
+                    availableColors.first()
+                } else {
+                    nameToColorMap.size % colorSize
+                }
+            } else {
+                // 首次建表导入：保持随机起始偏移轮询
+                val next = colorOffset % colorSize
+                colorOffset++
+                next
+            }
+        }
+    }
+
     private fun getOrAssignColorByName(
         jsonCourse: ImportCourseJsonModel,
         colorSize: Int,
         nameToColorMap: MutableMap<String, Int>,
+        existingColorMap: Map<String, Int>,
         getNextAutoColor: () -> Int
     ): Int {
         val trimmedName = jsonCourse.name.trim()
@@ -114,6 +144,8 @@ class CourseConversionRepository(
         val importedColor = jsonCourse.color
         val finalColor = if (importedColor != null && importedColor in 0 until colorSize) {
             importedColor
+        } else if (existingColorMap.containsKey(trimmedName)) {
+            existingColorMap.getValue(trimmedName)
         } else {
             getNextAutoColor()
         }
@@ -132,13 +164,22 @@ class CourseConversionRepository(
         val currentStyle = styleSettingsRepository.styleFlow.first()
         val colorSize = currentStyle.courseColorMaps.size
 
+        // 提取本地已有课程的颜色映射，优先保留旧颜色
+        val existingCourses = courseDao.getCoursesOnceByTableId(tableId)
+        val existingColorMap = mutableMapOf<String, Int>()
+        existingCourses.forEach { course ->
+            if (course.colorInt in 0 until colorSize) {
+                existingColorMap.putIfAbsent(course.name.trim(), course.colorInt)
+            }
+        }
+
         courseDao.deleteCoursesByTableId(tableId)
 
         val courseEntities = ArrayList<Course>(coursesJsonModel.size)
         val courseWeekEntities = mutableListOf<CourseWeek>()
 
         val nameToColorMap = mutableMapOf<String, Int>()
-        var colorOffset = if (colorSize > 0) Random.nextInt(colorSize) else 0
+        val getNextAutoColor = createAutoColorProvider(existingColorMap, nameToColorMap, colorSize)
 
         coursesJsonModel.forEach { jsonCourse ->
             val courseId = Uuid.random().toString()
@@ -147,11 +188,8 @@ class CourseConversionRepository(
                 jsonCourse = jsonCourse,
                 colorSize = colorSize,
                 nameToColorMap = nameToColorMap,
-                getNextAutoColor = {
-                    val next = if (colorSize > 0) colorOffset % colorSize else 0
-                    colorOffset++
-                    next
-                }
+                existingColorMap = existingColorMap,
+                getNextAutoColor = getNextAutoColor
             )
 
             courseEntities.add(
@@ -208,6 +246,15 @@ class CourseConversionRepository(
         val currentStyle = styleSettingsRepository.styleFlow.first()
         val colorSize = currentStyle.courseColorMaps.size
 
+        // 提取本地已有课程的颜色映射，优先保留旧颜色
+        val existingCourses = courseDao.getCoursesOnceByTableId(tableId)
+        val existingColorMap = mutableMapOf<String, Int>()
+        existingCourses.forEach { course ->
+            if (course.colorInt in 0 until colorSize) {
+                existingColorMap.putIfAbsent(course.name.trim(), course.colorInt)
+            }
+        }
+
         // 处理课程数据（始终清空原有课程）
         courseDao.deleteCoursesByTableId(tableId)
 
@@ -215,7 +262,7 @@ class CourseConversionRepository(
         val courseWeekEntities = mutableListOf<CourseWeek>()
 
         val nameToColorMap = mutableMapOf<String, Int>()
-        var colorOffset = if (colorSize > 0) Random.nextInt(colorSize) else 0
+        val getNextAutoColor = createAutoColorProvider(existingColorMap, nameToColorMap, colorSize)
 
         courseTableJsonModel.courses.forEach { jsonCourse ->
             val courseId = jsonCourse.id ?: Uuid.random().toString()
@@ -224,11 +271,8 @@ class CourseConversionRepository(
                 jsonCourse = jsonCourse,
                 colorSize = colorSize,
                 nameToColorMap = nameToColorMap,
-                getNextAutoColor = {
-                    val next = if (colorSize > 0) colorOffset % colorSize else 0
-                    colorOffset++
-                    next
-                }
+                existingColorMap = existingColorMap,
+                getNextAutoColor = getNextAutoColor
             )
 
             courseEntities.add(

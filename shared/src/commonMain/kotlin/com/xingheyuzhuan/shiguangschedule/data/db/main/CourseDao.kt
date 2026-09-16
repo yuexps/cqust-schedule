@@ -35,6 +35,12 @@ interface CourseDao {
     fun getCoursesByTableId(courseTableId: String): Flow<List<Course>>
 
     /**
+     * 一次性查询指定课表ID的所有课程。
+     */
+    @Query("SELECT * FROM courses WHERE courseTableId = :courseTableId")
+    suspend fun getCoursesOnceByTableId(courseTableId: String): List<Course>
+
+    /**
      * 获取指定课表ID的所有课程，并包含其对应的周数。
      * 排序逻辑与上面保持一致，确保关联查询结果的顺序正确字段。
      */
