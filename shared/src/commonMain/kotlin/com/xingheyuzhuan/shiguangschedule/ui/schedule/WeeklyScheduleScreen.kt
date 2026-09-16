@@ -60,11 +60,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.xingheyuzhuan.shiguangschedule.Destination
-import com.xingheyuzhuan.shiguangschedule.data.db.main.CourseTable
 import com.xingheyuzhuan.shiguangschedule.data.model.schedule_style.ScheduleModeProto
 import com.xingheyuzhuan.shiguangschedule.navigation.AddEditCourseChannel
 import com.xingheyuzhuan.shiguangschedule.navigation.PresetCourseData
-import com.xingheyuzhuan.shiguangschedule.ui.components.CourseTablePickerDialog
 import com.xingheyuzhuan.shiguangschedule.ui.schedule.components.CourseDetailBottomSheet
 import com.xingheyuzhuan.shiguangschedule.ui.schedule.components.FloatingCourseBar
 import com.xingheyuzhuan.shiguangschedule.ui.schedule.components.ScheduleGrid
@@ -86,11 +84,10 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.viewmodel.koinViewModel
 import shiguangschedule.shared.generated.resources.Res
-import shiguangschedule.shared.generated.resources.action_select_table
 import shiguangschedule.shared.generated.resources.arrow_drop_down_24px
 import shiguangschedule.shared.generated.resources.format_week_display
 import shiguangschedule.shared.generated.resources.snackbar_add_course_within_semester
-import shiguangschedule.shared.generated.resources.swap_horiz_24px
+
 import shiguangschedule.shared.generated.resources.title_current_week
 import shiguangschedule.shared.generated.resources.title_semester_not_set
 import shiguangschedule.shared.generated.resources.title_vacation
@@ -256,15 +253,6 @@ fun WeeklyScheduleScreen(
                             )
                         }
                     },
-                    actions = {
-                        IconButton(onClick = { showTableSwitcher = true }) {
-                            Icon(
-                                imageVector = vectorResource(Res.drawable.swap_horiz_24px),
-                                contentDescription = stringResource(Res.string.action_select_table),
-                                tint = customTextColor
-                            )
-                        }
-                    },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Color.Transparent,
                         scrolledContainerColor = Color.Transparent,
@@ -409,7 +397,7 @@ fun WeeklyScheduleScreen(
                         }
 
                         override fun onTimeSlotClicked() {
-                            onNavigate(Destination.TimeScheduleManagement)
+                            // 固定作息，无需跳转设置
                         }
 
                         override fun onHoldStateChanged(isHolding: Boolean) {
@@ -510,6 +498,7 @@ fun WeeklyScheduleScreen(
             onDismissRequest = { showWeekSelector = false }
         )
     }
+
 
     // 课程详情弹窗
     if (selectedBlockForDetail != null) {

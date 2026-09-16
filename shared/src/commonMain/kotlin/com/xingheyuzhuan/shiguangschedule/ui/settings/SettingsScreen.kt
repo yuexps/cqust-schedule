@@ -6,18 +6,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-<<<<<<< HEAD
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-=======
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
->>>>>>> 04df422 (feat: 重构导航框架，支持悬浮动态导航栏并优化页面布局)
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -451,11 +446,6 @@ private fun AdvancedSettingsSection(onNavigate: (Destination) -> Unit) {
                 title = stringResource(Res.string.item_course_management),
                 subtitle = stringResource(Res.string.desc_course_management),
                 onClick = { onNavigate(Destination.CourseManagementList) }
-            )
-            SettingItem(
-                title = stringResource(Res.string.title_schedule_management),
-                subtitle = stringResource(Res.string.desc_schedule_management),
-                onClick = { onNavigate(Destination.TimeScheduleManagement) }
             )
             SettingItem(
                 title = stringResource(Res.string.item_personalization),

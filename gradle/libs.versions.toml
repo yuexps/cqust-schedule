@@ -60,11 +60,7 @@ material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "m
 
 # Kotlin & 通用测试
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-<<<<<<< HEAD
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
-=======
-kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinxCoroutines" }
->>>>>>> 112ede8 (feat: 重构作息调度系统，支持公共作息与动态组合作息方案)
 
 # Android 平台专属基础库
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
