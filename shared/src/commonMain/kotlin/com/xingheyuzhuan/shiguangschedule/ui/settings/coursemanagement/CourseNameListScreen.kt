@@ -3,6 +3,7 @@ package com.xingheyuzhuan.shiguangschedule.ui.settings.coursemanagement
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -285,6 +286,7 @@ fun CourseNameCard(
         modifier = Modifier
             .fillMaxWidth()
             .height(96.dp)
+            .clip(CardDefaults.shape)
             .combinedClickable(
                 onClick = { onCourseClick(name) },
                 onLongClick = { onCourseLongClick(name) }

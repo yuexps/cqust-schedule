@@ -2,6 +2,8 @@ package com.xingheyuzhuan.shiguangschedule.ui.schedule
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -229,6 +231,7 @@ fun WeeklyScheduleScreen(
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
                                 .clickable {
                                     if (!uiState.isSemesterSet || uiState.semesterStartDate == null) {
                                         onNavigate(Destination.Settings)
@@ -236,7 +239,7 @@ fun WeeklyScheduleScreen(
                                         showWeekSelector = true
                                     }
                                 }
-                                .padding(vertical = 4.dp)
+                                .padding(horizontal = 12.dp, vertical = 4.dp)
                         ) {
                             Text(
                                 text = displayTitle,
@@ -521,7 +524,7 @@ fun WeeklyScheduleScreen(
             },
             title = {
                 Text(
-                    text = "设置行课日期",
+                    text = "设置行课起始日期",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -532,12 +535,12 @@ fun WeeklyScheduleScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "请选择本学期的行课日期（第 1 周，周一），以便为您准确展示当前周的课程安排。",
+                        text = "请选择本学期的行课起始日期（第 1 周周一），以便准确计算周次并展示课程安排。",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     val calendarUrl = "https://www.cqust.edu.cn/index/js/xl.htm"
                     val annotatedPrompt = buildAnnotatedString {
-                        append("提示：如不确定行课开始日期，您可查阅重庆科技大学")
+                        append("提示：如不确定行课起始日期，您可查阅重庆科技大学")
                         withLink(
                             LinkAnnotation.Url(
                                 url = calendarUrl,

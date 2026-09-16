@@ -1,6 +1,8 @@
 package com.xingheyuzhuan.shiguangschedule.ui.settings.conversion
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import com.xingheyuzhuan.shiguangschedule.Destination
 import com.xingheyuzhuan.shiguangschedule.data.di.AppStorage
 import com.xingheyuzhuan.shiguangschedule.tool.FileManagerCallbacks
+import com.xingheyuzhuan.shiguangschedule.tool.rememberCalendarPermissionLauncher
 import com.xingheyuzhuan.shiguangschedule.tool.rememberFileManager
 import com.xingheyuzhuan.shiguangschedule.ui.components.ShareDialog
 import kotlinx.coroutines.launch
@@ -94,6 +97,10 @@ fun CourseTableConversionScreen(
     var pendingShareFilePath by remember { mutableStateOf<String?>(null) }
     var shareFilePath by remember { mutableStateOf<String?>(null) }
     var shareFileMimeType by remember { mutableStateOf("application/json") }
+
+    val syncToCalendarWithPermission = rememberCalendarPermissionLauncher {
+        viewModel.onSyncToCalendarClick()
+    }
 
     val fileManager = rememberFileManager(
         callbacks = FileManagerCallbacks(
@@ -166,7 +173,7 @@ fun CourseTableConversionScreen(
         topBar = {
             Column {
                 TopAppBar(
-                    title = { Text(stringResource(Res.string.title_conversion)) },
+                    title = { Text("课表导出与同步") },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
                             Icon(
@@ -196,7 +203,7 @@ fun CourseTableConversionScreen(
         ) {
             Spacer(Modifier.height(16.dp))
 
-            Text(stringResource(Res.string.section_file_conversion), style = MaterialTheme.typography.titleLarge, modifier = Modifier.fillMaxWidth())
+            Text("文件导出", style = MaterialTheme.typography.titleLarge, modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.height(8.dp))
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
@@ -204,12 +211,6 @@ fun CourseTableConversionScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    ConversionRow(
-                        title = stringResource(Res.string.item_import_course_file),
-                        desc = stringResource(Res.string.desc_import_json),
-                        onClick = { viewModel.onImportClick() }
-                    )
-                    HorizontalDivider()
                     ConversionRow(
                         title = stringResource(Res.string.item_export_course_file),
                         desc = stringResource(Res.string.desc_export_json_with_config),
@@ -237,13 +238,7 @@ fun CourseTableConversionScreen(
                     ConversionRow(
                         title = stringResource(Res.string.item_sync_to_system_calendar),
                         desc = stringResource(Res.string.desc_sync_to_system_calendar),
-                        onClick = { viewModel.onSyncToCalendarClick() }
-                    )
-                    HorizontalDivider()
-                    ConversionRow(
-                        title = stringResource(Res.string.item_backup_restore),
-                        desc = stringResource(Res.string.desc_backup_restore),
-                        onClick = { onNavigate(Destination.BackupAndRestore) }
+                        onClick = syncToCalendarWithPermission
                     )
                 }
             }
@@ -270,9 +265,6 @@ fun CourseTableConversionScreen(
     }
 }
 
-/**
- * 转换页面的列表行子组件。
- */
 @Composable
 private fun ConversionRow(
     title: String,
@@ -282,8 +274,9 @@ private fun ConversionRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
+            .padding(horizontal = 8.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {

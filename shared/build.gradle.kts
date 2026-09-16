@@ -70,16 +70,13 @@ kotlin {
 
                 // Serialization & 工具库
                 implementation(libs.kotlinx.serialization.json)
-                implementation(libs.kotlinx.serialization.cbor)
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.okio)
 
                 // Ktor 核心网络库
                 implementation(libs.ktor.client.core)
-                implementation(libs.ktor.client.logging)
                 implementation(libs.ktor.client.content.negotiation)
                 implementation(libs.ktor.serialization.kotlinx.json)
-                implementation(libs.ktor.client.auth)
                 implementation(libs.koin.annotations)
 
                 // Room 3.0 & DataStore 存储
@@ -109,6 +106,7 @@ dependencies {
 
 // 导出第三方依赖许可信息
 aboutLibraries {
+    offlineMode = true
     export {
         outputPath = file("src/commonMain/composeResources/files/aboutlibraries.json")
         prettyPrint = true

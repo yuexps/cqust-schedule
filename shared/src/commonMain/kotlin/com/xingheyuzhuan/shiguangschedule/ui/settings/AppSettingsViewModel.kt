@@ -195,7 +195,23 @@ class SettingsViewModel(
     }
 
     /**
-     * 自定义浅色模式种子色（传 Color 则修改，传 null 则重置）
+     * 选择预设主题色（自动关闭动态取色，并同时更新浅色与深色种子色）
+     */
+    fun onPresetColorSelected(color: Color) {
+        viewModelScope.launch {
+            val currentSettings = uiState.value.appSettings
+            val newColorArgb = color.toArgb().toLong()
+            val updatedSettings = currentSettings.copy(
+                useDynamicColor = false,
+                customLightPrimary = newColorArgb,
+                customDarkPrimary = newColorArgb
+            )
+            appSettingsRepository.insertOrUpdateAppSettings(updatedSettings)
+        }
+    }
+
+    /**
+     * 自定义浅色模式种子色（传 Color 则修改并关闭动态取色，传 null 则重置）
      */
     fun onCustomLightPrimaryChanged(color: Color? = null) {
         viewModelScope.launch {
@@ -204,6 +220,7 @@ class SettingsViewModel(
                 ?: AppSettingsModel().customLightPrimary
 
             val updatedSettings = currentSettings.copy(
+                useDynamicColor = if (color != null) false else currentSettings.useDynamicColor,
                 customLightPrimary = newColorArgb
             )
             appSettingsRepository.insertOrUpdateAppSettings(updatedSettings)
@@ -211,7 +228,7 @@ class SettingsViewModel(
     }
 
     /**
-     * 自定义深色模式种子色（传 Color 则修改，传 null 则重置）
+     * 自定义深色模式种子色（传 Color 则修改并关闭动态取色，传 null 则重置）
      */
     fun onCustomDarkPrimaryChanged(color: Color? = null) {
         viewModelScope.launch {
@@ -220,19 +237,33 @@ class SettingsViewModel(
                 ?: AppSettingsModel().customDarkPrimary
 
             val updatedSettings = currentSettings.copy(
+                useDynamicColor = if (color != null) false else currentSettings.useDynamicColor,
                 customDarkPrimary = newColorArgb
             )
             appSettingsRepository.insertOrUpdateAppSettings(updatedSettings)
         }
     }
 
+
+
     /**
-     * 更新开发者模式开关状态
+     * 更新自动检查更新开关
      */
-    fun onDeveloperModeChanged(enabled: Boolean) {
+    fun onAutoCheckUpdateEnabledChanged(enabled: Boolean) {
         viewModelScope.launch {
             val currentSettings = uiState.value.appSettings
-            val updatedSettings = currentSettings.copy(developerModeEnabled = enabled)
+            val updatedSettings = currentSettings.copy(autoCheckUpdateEnabled = enabled)
+            appSettingsRepository.insertOrUpdateAppSettings(updatedSettings)
+        }
+    }
+
+    /**
+     * 记录最新一次检查更新的时间戳
+     */
+    fun onUpdateCheckTimeRecorded(timestamp: Long) {
+        viewModelScope.launch {
+            val currentSettings = uiState.value.appSettings
+            val updatedSettings = currentSettings.copy(lastUpdateCheckTime = timestamp)
             appSettingsRepository.insertOrUpdateAppSettings(updatedSettings)
         }
     }
@@ -267,7 +298,11 @@ class SettingsViewModel(
         viewModelScope.launch {
             _isSyncing.value = true
 
-            val syncResult = cqustSyncManager.syncCourses(sid, pwd)
+            val syncResult = cqustSyncManager.syncCourses(
+                studentId = sid,
+                passwordRaw = pwd,
+                onProgress = { ToastManager.show(it) }
+            )
             syncResult.fold(
                 onSuccess = { count ->
                     _isSyncing.value = false

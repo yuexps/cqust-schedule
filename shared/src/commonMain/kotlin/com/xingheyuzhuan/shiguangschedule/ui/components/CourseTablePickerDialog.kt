@@ -259,9 +259,8 @@ fun CourseTablePickerCard(
     onCardClick: (CourseTable) -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onCardClick(courseTable) },
+        onClick = { onCardClick(courseTable) },
+        modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = when {
                 isSelected -> MaterialTheme.colorScheme.primaryContainer

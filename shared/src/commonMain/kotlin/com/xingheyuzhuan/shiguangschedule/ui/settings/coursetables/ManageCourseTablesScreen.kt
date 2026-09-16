@@ -311,9 +311,8 @@ fun CourseTableCard(
     val createdAtText = stringResource(Res.string.course_table_created_at_prefix, formattedDate)
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onCardClick(tableInfo) },
+        onClick = { onCardClick(tableInfo) },
+        modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
         ),

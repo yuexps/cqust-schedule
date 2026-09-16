@@ -1,14 +1,20 @@
 package com.xingheyuzhuan.shiguangschedule.ui.settings.additional
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -17,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -28,11 +35,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.material3.Switch
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.xingheyuzhuan.shiguangschedule.Destination
 import com.xingheyuzhuan.shiguangschedule.tool.clipEntryOf
@@ -54,18 +63,19 @@ import shiguangschedule.shared.generated.resources.arrow_back_24px
 import shiguangschedule.shared.generated.resources.code_24px
 import shiguangschedule.shared.generated.resources.groups_24px
 import shiguangschedule.shared.generated.resources.home_24px
+import shiguangschedule.shared.generated.resources.item_auto_check_update
 import shiguangschedule.shared.generated.resources.item_check_software_update
 import shiguangschedule.shared.generated.resources.item_contributors
 import shiguangschedule.shared.generated.resources.item_github_repo
 import shiguangschedule.shared.generated.resources.item_language_settings
 import shiguangschedule.shared.generated.resources.item_open_source_licenses
 import shiguangschedule.shared.generated.resources.item_start_screen_settings
-import shiguangschedule.shared.generated.resources.item_update_repo
 import shiguangschedule.shared.generated.resources.label_version_prefix
 import shiguangschedule.shared.generated.resources.language_24px
 import shiguangschedule.shared.generated.resources.list_alt_24px
 import shiguangschedule.shared.generated.resources.palette_24px
 import shiguangschedule.shared.generated.resources.people_alt_24px
+import shiguangschedule.shared.generated.resources.school_24px
 import shiguangschedule.shared.generated.resources.theme_settings_title
 import shiguangschedule.shared.generated.resources.title_more_options
 import shiguangschedule.shared.generated.resources.update_24px
@@ -92,7 +102,6 @@ fun MoreOptionsScreen(
 
     // 状态观察
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDeveloperModeEnabled = uiState.appSettings.developerModeEnabled
 
     // 更新逻辑相关状态
     var updateStatus by remember { mutableStateOf<UpdateStatus>(UpdateStatus.Idle) }
@@ -133,7 +142,10 @@ fun MoreOptionsScreen(
             TopAppBar(
                 title = { Text(text = stringResource(Res.string.title_more_options)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        onClick = onBack,
+                        modifier = Modifier.clip(CircleShape)
+                    ) {
                         Icon(
                             imageVector = vectorResource(Res.drawable.arrow_back_24px),
                             contentDescription = stringResource(Res.string.a11y_back)
@@ -150,66 +162,95 @@ fun MoreOptionsScreen(
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 应用信息头部
-            var titleClickCount by remember { mutableIntStateOf(0) }
+            // 应用品牌与版本头部
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 24.dp),
+                    .padding(top = 16.dp, bottom = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // 品牌 Logo 徽章
+                Surface(
+                    modifier = Modifier
+                        .size(68.dp)
+                        .clip(RoundedCornerShape(22.dp)),
+                    shape = RoundedCornerShape(22.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = vectorResource(Res.drawable.school_24px),
+                            contentDescription = null,
+                            modifier = Modifier.size(36.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
                 Text(
                     text = stringResource(Res.string.app_name),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    modifier = Modifier.clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) {
-                        titleClickCount++
-                        if (titleClickCount >= 5) {
-                            titleClickCount = 0
-                            viewModel.onDeveloperModeChanged(true)
-                        }
-                    }
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = stringResource(Res.string.label_version_prefix, appVersionName),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                ) {
+                    Text(
+                        text = stringResource(Res.string.label_version_prefix, appVersionName),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                    )
+                }
             }
 
-            // 设置列表卡片
+            // 分组一：功能与界面设置
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp)
+                    .clip(RoundedCornerShape(20.dp)),
+                shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    containerColor = MaterialTheme.colorScheme.surface
                 ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                shape = MaterialTheme.shapes.medium
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
-
-                    // 开发者模式设置项
-                    DeveloperModeSettingItem(
-                        isDeveloperModeEnabled = isDeveloperModeEnabled,
-                        onDeveloperModeChanged = { viewModel.onDeveloperModeChanged(it) }
-                    )
 
                     // 检查更新
                     SettingListItem(
                         icon = vectorResource(Res.drawable.update_24px),
                         title = stringResource(Res.string.item_check_software_update),
-                        onClick = startUpdateCheck
+                        onClick = startUpdateCheck,
+                        showDivider = false
                     )
 
-                    // 语言切换 (导航至独立页面)
+                    // 自动检查更新开关
+                    SettingListItem(
+                        title = stringResource(Res.string.item_auto_check_update),
+                        onClick = {
+                            viewModel.onAutoCheckUpdateEnabledChanged(!uiState.appSettings.autoCheckUpdateEnabled)
+                        },
+                        trailingContent = {
+                            Switch(
+                                checked = uiState.appSettings.autoCheckUpdateEnabled,
+                                onCheckedChange = { viewModel.onAutoCheckUpdateEnabledChanged(it) },
+                                modifier = Modifier.scale(0.8f)
+                            )
+                        }
+                    )
+
+                    // 语言切换
                     SettingListItem(
                         icon = vectorResource(Res.drawable.language_24px),
                         title = stringResource(Res.string.item_language_settings),
@@ -228,22 +269,34 @@ fun MoreOptionsScreen(
                         icon = vectorResource(Res.drawable.home_24px),
                         title = stringResource(Res.string.item_start_screen_settings),
                         onClick = { showStartScreenDialog = true },
+                        showDivider = false,
                         trailingContent = {
                             Text(
                                 text = stringResource(uiState.appSettings.startScreen.labelRes),
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
                             )
                         }
                     )
+                }
+            }
 
-                    // GitHub 仓库
-                    SettingListItem(
-                        icon = vectorResource(Res.drawable.code_24px),
-                        title = stringResource(Res.string.item_github_repo),
-                        onClick = { uriHandler.openUri(GITHUB_REPO_URL) }
-                    )
+            Spacer(modifier = Modifier.height(16.dp))
 
+            // 分组二：社区与开源
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .clip(RoundedCornerShape(20.dp)),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
                     // QQ 交流群
                     SettingListItem(
                         icon = vectorResource(Res.drawable.groups_24px),
@@ -252,10 +305,18 @@ fun MoreOptionsScreen(
                             Text(
                                 text = QQ_GROUP_NUMBER,
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
                             )
                         },
                         onClick = joinQQGroup
+                    )
+
+                    // GitHub 仓库
+                    SettingListItem(
+                        icon = vectorResource(Res.drawable.code_24px),
+                        title = stringResource(Res.string.item_github_repo),
+                        onClick = { uriHandler.openUri(GITHUB_REPO_URL) }
                     )
 
                     // 开源许可证
@@ -274,7 +335,13 @@ fun MoreOptionsScreen(
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(32.dp))
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 致谢区域
+            AcknowledgmentContent()
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 

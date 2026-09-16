@@ -1,6 +1,7 @@
 package com.xingheyuzhuan.shiguangschedule.ui.settings.notification
 
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -219,8 +220,9 @@ fun AutoModeSelectionDialog(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
                             .clickable { selectedKey = optionKey }
-                            .padding(vertical = 4.dp)
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         RadioButton(selected = (selectedKey == optionKey), onClick = { selectedKey = optionKey })
                         Text(label, modifier = Modifier.padding(start = 8.dp))

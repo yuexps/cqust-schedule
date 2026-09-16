@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -308,6 +309,7 @@ private fun ScheduleCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(CardDefaults.shape)
             .alpha(if (isSelectionMode && isExclusive) 0.5f else 1.0f)
             .combinedClickable(
                 onClick = {

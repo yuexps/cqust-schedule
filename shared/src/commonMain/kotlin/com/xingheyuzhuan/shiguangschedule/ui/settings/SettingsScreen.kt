@@ -1,6 +1,7 @@
 package com.xingheyuzhuan.shiguangschedule.ui.settings
 
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -71,7 +72,6 @@ import shiguangschedule.shared.generated.resources.refresh_24px
 import shiguangschedule.shared.generated.resources.date_format_year_month_day
 import shiguangschedule.shared.generated.resources.day_of_week_monday
 import shiguangschedule.shared.generated.resources.day_of_week_sunday
-import shiguangschedule.shared.generated.resources.desc_course_conversion
 import shiguangschedule.shared.generated.resources.desc_course_management
 import shiguangschedule.shared.generated.resources.desc_current_week_manual
 import shiguangschedule.shared.generated.resources.desc_first_day_of_week
@@ -88,7 +88,6 @@ import shiguangschedule.shared.generated.resources.desc_total_weeks
 import shiguangschedule.shared.generated.resources.dialog_title_manual_set_week
 import shiguangschedule.shared.generated.resources.dialog_title_select_total_weeks
 import shiguangschedule.shared.generated.resources.dialog_title_set_first_day_of_week
-import shiguangschedule.shared.generated.resources.item_course_conversion
 import shiguangschedule.shared.generated.resources.item_course_management
 import shiguangschedule.shared.generated.resources.item_current_week
 import shiguangschedule.shared.generated.resources.item_first_day_of_week
@@ -433,8 +432,8 @@ private fun AdvancedSettingsSection(onNavigate: (Destination) -> Unit) {
                 fontWeight = FontWeight.SemiBold
             )
             SettingItem(
-                title = stringResource(Res.string.item_course_conversion),
-                subtitle = stringResource(Res.string.desc_course_conversion),
+                title = "课表导出",
+                subtitle = "导出为 JSON/ICS 日历文件或同步至系统日历",
                 onClick = { onNavigate(Destination.CourseTableConversion) }
             )
             SettingItem(
@@ -483,8 +482,9 @@ private fun SettingItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
             .clickable(enabled = onClick != null) { onClick?.invoke() }
-            .padding(vertical = 8.dp),
+            .padding(horizontal = 8.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {

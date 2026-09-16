@@ -2,17 +2,13 @@ package com.xingheyuzhuan.shiguangschedule.ui.settings.notification
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.xingheyuzhuan.shiguangschedule.data.api.date.ApiDateImporter
 import com.xingheyuzhuan.shiguangschedule.data.model.AutoControlMode
 import com.xingheyuzhuan.shiguangschedule.data.repository.AppSettingsRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.core.annotation.KoinViewModel
 
 /**
@@ -160,24 +156,6 @@ class NotificationSettingsViewModel(
                 )
             )
             dismissDialog()
-        }
-    }
-
-    /**
-     * 从网络同步并更新节假日跳过日期
-     *
-     * @param onResult 导入结果回调
-     */
-    fun updateHolidays(onResult: (Result<Unit>) -> Unit = {}) {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
-            val result = runCatching {
-                withContext(Dispatchers.IO) {
-                    ApiDateImporter.importAndSaveSkippedDates(appSettingsRepository)
-                }
-            }
-            _uiState.value = _uiState.value.copy(isLoading = false)
-            onResult(result)
         }
     }
 

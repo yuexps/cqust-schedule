@@ -313,7 +313,6 @@
     <string name="error_ics_export_failed">行事曆檔案匯出失敗：%1$s</string>
     
     <!-- 更多設定 -->
-    <string name="item_developer_options">開發者選項</string>
     <string name="error_sync_calendar_failed">同步失敗，請檢查行事曆權限</string>
     <string name="title_more_options">更多</string>
     <string name="a11y_app_icon">應用程式圖示</string>

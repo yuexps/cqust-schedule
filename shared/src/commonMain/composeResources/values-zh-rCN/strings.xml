@@ -26,7 +26,7 @@
     <string name="common_action_continue_editing">继续编辑</string>
     <string name="label_recent_visit">最近访问</string>
     <string name="action_reset">重置</string>
-    <string name="floating_course_hint">已挂起，左右滑周点击空白处放下</string>
+    <string name="floating_course_hint">已浮起，切换周次后点击空白格放置</string>
     <string name="error_name_cannot_be_empty">名称不能为空</string>
 
     <!-- 主界面及今日课表 -->
@@ -35,8 +35,8 @@
     <string name="nav_settings">我的</string>
     <string name="title_today_schedule">今日课表</string>
     <string name="text_no_courses_today">今天没有课程</string>
-    <string name="title_vacation_until_start">假期中（距离开学还有%1$s天）</string>
-    <string name="title_semester_not_set">请设置开学日期</string>
+    <string name="title_vacation_until_start">假期中（距离行课开始还有%1$s天）</string>
+    <string name="title_semester_not_set">请设置行课起始日期</string>
     <string name="date_format_year_month_day">%1$s年%2$s月%3$s日</string>
 
     <!-- 添加课程 -->
@@ -141,8 +141,8 @@
     <string name="title_course_notification_settings">课程提醒设置</string>
     <string name="section_title_general">常规</string>
     <string name="section_title_advanced">高级</string>
-    <string name="text_permission_importance_title">权限设置对于 Android 提醒非常重要</string>
-    <string name="text_permission_importance_detail">为了确保提醒按时送达，你需要：\n1. 授予精确闹钟权限 (Android 12及以上)\n2. 开启应用的自启动权限\n3. 关闭应用的电池优化功能\n4. 授予勿扰模式权限（用于自动模式切换）\n\n请在下方的设置项中手动开启这些权限。</string>
+    <string name="text_permission_importance_title">后台运行与提醒权限说明</string>
+    <string name="text_permission_importance_detail">为确保上课提醒准时送达，建议开启精确闹钟、自启动并允许后台无限制运行。若使用上课静音功能，还需授予勿扰权限。</string>
     <string name="item_course_reminder">课程提醒</string>
     <string name="item_remind_time_before">提前提醒时间</string>
     <string name="remind_time_minutes_format">%1$s 分钟</string>
@@ -154,18 +154,6 @@
     <string name="status_unauthorized">未授权</string>
     <string name="item_background_and_autostart">后台运行和自启</string>
     <string name="item_ignore_battery_optimization">忽略电池优化</string>
-    <string name="section_title_skip_dates">跳过日期功能</string>
-    <string name="text_skip_dates_experimental">实验性的功能，不保证一定有用</string>
-    <string name="item_update_holiday_info">更新节假日信息</string>
-    <string name="update_holiday_info_hint">可能不稳定(一般情况下只有年末才公布下一年的节假日信息)</string>
-    <string name="item_clear_skipped_dates">清空跳过日期</string>
-    <string name="item_view_skipped_dates">查看跳过的日期</string>
-    <string name="skipped_dates_count_format">%1$d 个日期</string>
-    <string name="skipped_dates_none">无</string>
-    <string name="toast_holidays_update_success">节假日信息更新成功！</string>
-    <string name="toast_update_failed">更新失败：%1$s</string>
-    <string name="toast_clear_success">已清空所有跳过日期！</string>
-    <string name="toast_clear_failed">清空失败：%1$s</string>
     <string name="dialog_title_auto_mode_selection">上课自动模式选择</string>
     <string name="auto_mode_dnd_permission_warning">（缺少勿扰权限，启用勿扰/静音可能无效）</string>
     <string name="dialog_title_set_remind_time">设置提前提醒时间</string>
@@ -175,15 +163,11 @@
     <string name="dialog_title_exact_alarm_permission">需要精确闹钟权限</string>
     <string name="dialog_text_exact_alarm_permission">为了确保提醒能在准确时间送达，请授予精确闹钟权限。</string>
     <string name="action_go_to_settings">去设置</string>
-    <string name="dialog_title_clear_confirmation">确认清空</string>
-    <string name="dialog_text_clear_confirmation">这会永久清除所有跳过的日期，无法恢复。确定要继续吗？</string>
     <string name="dialog_title_dnd_permission">需要勿扰模式权限</string>
     <string name="dialog_text_dnd_permission">为了启用上课自动模式，请授予应用访问勿扰模式设置的权限。</string>
     <string name="auto_mode_off">关闭</string>
     <string name="auto_mode_dnd">勿扰模式 (DND)</string>
     <string name="auto_mode_silent">静音模式 (SILENT)</string>
-    <string name="dialog_title_view_skipped_dates">跳过的提醒日期</string>
-    <string name="text_no_skipped_dates">没有设置跳过的日期。</string>
     <string name="action_close">关闭</string>
     <string name="toast_notification_permission_denied">通知权限被拒绝，无法接收课程提醒。</string>
     <string name="item_compat_wearable_sync">兼容穿戴设备同步通知</string>
@@ -194,17 +178,17 @@
     <string name="section_title_general_settings">通用设置</string>
     <string name="item_show_non_current_week">显示非本周课程</string>
     <string name="desc_show_non_current_week">在课表中展示当前周次以外的课程</string>
-    <string name="item_show_weekends">是否显示周末</string>
-    <string name="desc_show_weekends">开启后，课程表中将显示周末的课程安排</string>
-    <string name="item_set_start_date">设置开学日期</string>
-    <string name="desc_set_start_date">选择学期第一周(教务系统参考的第一周)的周一</string>
+    <string name="item_show_weekends">显示周末</string>
+    <string name="desc_show_weekends">在课表中显示周六与周日</string>
+    <string name="item_set_start_date">设置行课起始日期</string>
+    <string name="desc_set_start_date">设置学期第 1 周的周一</string>
     <string name="status_not_set">未设置</string>
     <string name="item_total_weeks">本学期总周数</string>
-    <string name="desc_total_weeks">设置学期总共持续多少周</string>
+    <string name="desc_total_weeks">设置学期总教学周数</string>
     <string name="status_total_weeks_format">%1$d 周</string>
     <string name="item_current_week">当前周数</string>
     <string name="desc_current_week_manual">手动调整当前周数</string>
-    <string name="status_set_start_date_first">请设置开始日期</string>
+    <string name="status_set_start_date_first">请设置行课起始日期</string>
     <string name="status_current_week_format">第 %1$d 周</string>
     <string name="item_first_day_of_week">设置每周起始日</string>
     <string name="desc_first_day_of_week">设置一周从哪天开始计算和显示</string>
@@ -213,12 +197,12 @@
     <string name="item_schedule_tweak">课程调动</string>
     <string name="desc_schedule_tweak">一键将指定日期的所有课程调整到新日期</string>
     <string name="section_title_advanced_features">高级功能</string>
-    <string name="item_course_conversion">课表导入/导出</string>
-    <string name="desc_course_conversion">支持文件、教务导入及同步功能</string>
+    <string name="item_course_conversion">课表导出与同步</string>
+    <string name="desc_course_conversion">导出 JSON/ICS 文件与系统日历同步</string>
     <string name="desc_notification_settings">管理您的课程提醒通知</string>
-    <string name="desc_manage_course_tables">管理多份课程表，可切换、删除</string>
-    <string name="item_more_options">更多</string>
-    <string name="desc_more_options">提供我们的更多信息</string>
+    <string name="desc_manage_course_tables">切换或管理多份课程表</string>
+    <string name="item_more_options">关于与更多</string>
+    <string name="desc_more_options">版本更新、开源协议与关于</string>
     <string name="a11y_more_options">更多选项</string>
     <string name="dialog_title_select_total_weeks">选择总周数</string>
     <string name="dialog_title_manual_set_week">手动设置当前周数</string>
@@ -317,22 +301,22 @@
     <string name="schedule_type_public">公共作息</string>
     <string name="schedule_type_combo">组合作息</string>
 
-    <!-- 课表导入/导出 -->
-    <string name="title_conversion">课表导入/导出</string>
-    <string name="section_file_conversion">文件导入/导出</string>
+    <!-- 课表导出与同步 -->
+    <string name="title_conversion">课表导出与同步</string>
+    <string name="section_file_conversion">文件导出</string>
     <string name="item_import_course_file">课程文件导入</string>
-    <string name="desc_import_json">导入json文件</string>
+    <string name="desc_import_json">导入 JSON 文件</string>
     <string name="item_export_course_file">课程文件导出</string>
-    <string name="desc_export_json_with_config">导出携带时间段配置的json课程文件</string>
+    <string name="desc_export_json_with_config">导出课表数据 (JSON)</string>
     <string name="item_export_ics_file">日历文件导出</string>
-    <string name="desc_export_ics_with_alarm">导出ics文件,点击生成指定提醒时间参数的文件</string>
+    <string name="desc_export_ics_with_alarm">导出为通用日历日程 (ICS)</string>
     <string name="section_school_import">教务导入</string>
     <string name="item_school_system_import">重科教务系统导入</string>
     <string name="desc_school_import_quick">输入学号与密码自动同步本学期课程表</string>
     <string name="dialog_title_select_import_table">选择要导入的目标课表</string>
     <string name="dialog_title_select_export_table">选择要导出的课表</string>
-    <string name="dialog_title_ics_export_settings">日历导出设置</string>
-    <string name="label_select_alarm_time">选择提醒时间：</string>
+    <string name="dialog_title_ics_export_settings">导出日历提醒设置</string>
+    <string name="label_select_alarm_time">提前几分钟提醒</string>
     <string name="a11y_import">导入</string>
     <string name="a11y_export">导出</string>
     <string name="a11y_details">详情</string>
@@ -341,7 +325,7 @@
     <string name="snackbar_cannot_save_file">无法保存文件。</string>
     <string name="snackbar_file_save_canceled">文件保存已取消。</string>
     <string name="dialog_title_file_saved">文件已保存</string>
-    <string name="dialog_text_file_saved_share_prompt">文件已成功导出到您的下载目录，您想分享它吗？</string>
+    <string name="dialog_text_file_saved_share_prompt">文件已成功导出，是否立即分享？</string>
     <string name="snackbar_file_copy_failed_for_share">文件复制失败，无法分享。</string>
     <string name="action_share">分享</string>
     <string name="toast_import_success">课表导入成功！</string>
@@ -351,15 +335,14 @@
     <string name="error_import_failed">导入失败：%1$s</string>
     <string name="error_ics_export_data_failed">日历文件导出失败：获取数据失败</string>
     <string name="error_ics_export_failed">日历文件导出失败：%1$s</string>
-    <string name="section_sync">同步</string>
-    <string name="item_sync_to_system_calendar">同步到系统日历</string>
-    <string name="desc_sync_to_system_calendar">将当前课表一键同步至手机系统日历</string>
+    <string name="section_sync">系统日历同步</string>
+    <string name="item_sync_to_system_calendar">同步至系统日历</string>
+    <string name="desc_sync_to_system_calendar">将课表覆盖同步至系统日历</string>
     <string name="toast_sync_calendar_success">同步成功</string>
     <string name="error_sync_calendar_failed">同步失败，请检查日历权限</string>
 
     <!-- 更多设置 -->
     <string name="title_more_options">更多</string>
-    <string name="item_developer_options">开发者选项</string>
     <string name="a11y_app_icon">应用图标</string>
     <string name="a11y_navigate">跳转</string>
     <string name="a11y_acknowledgment">鸣谢</string>
@@ -373,6 +356,7 @@
     <string name="label_version_prefix">版本 %1$s</string>
     <string name="default_app_name">重科课表</string>
     <string name="item_check_software_update">检查应用更新</string>
+    <string name="item_auto_check_update">自动检查更新</string>
     <string name="item_language_settings">语言设置</string>
     <string name="language_follow_system">跟随系统</string>
     <string name="dialog_checking_update">正在检查更新...</string>
@@ -401,7 +385,7 @@
     <string name="a11y_arrow">箭头</string>
     <string name="title_tweak_to_course">调整到日期的课程</string>
     <string name="text_no_course">无课程</string>
-    <string name="error_tweak_no_table_or_semester">请先选择课表并设置学期开始日期</string>
+    <string name="error_tweak_no_table_or_semester">请先选择课表并设置行课起始日期</string>
     <string name="error_tweak_same_day">被调整日期和调整到日期不能是同一天</string>
     <string name="toast_tweak_success">调课成功！</string>
     <string name="error_tweak_failed">调课失败：%1$s</string>
@@ -546,14 +530,14 @@
     <string name="quick_delete_subtitle">按周次、星期或特定日期批量清理课表</string>
 
     <!-- 快速删除课程 -->
-    <string name="label_dimension_weeks_days">维度一：按周次和星期</string>
-    <string name="label_dimension_dates">维度二：按特定日期</string>
+    <string name="label_dimension_weeks_days">按周次与星期筛选</string>
+    <string name="label_dimension_dates">按指定日期范围筛选</string>
     <string name="hint_no_selection">请选择周次、星期或日期</string>
     <string name="hint_affected_count">预计从课表中移除 %1$d 节课程记录</string>
-    <string name="dialog_delete_confirm_msg">此操作不可撤销。受影响的课程记录将从选定的时间点中抹除，但课程的基础信息仍会保留。</string>
+    <string name="dialog_delete_confirm_msg">确定从课表中移除所选时间段的课程安排吗？此操作不可撤销。</string>
     <string name="btn_add_date">添加日期</string>
-    <string name="quick_delete_filter_weeks_days_hint">设置重复周次与星期 (可选)</string>
-    <string name="quick_delete_filter_date_range_hint">设置特定日期范围 (可选)</string>
+    <string name="quick_delete_filter_weeks_days_hint">选择周次与星期</string>
+    <string name="quick_delete_filter_date_range_hint">选择日期范围</string>
     <string name="quick_delete_label_days_prefix">星期: %1$s</string>
     <string name="quick_delete_dialog_select_date_title">选择日期范围</string>
     <string name="quick_delete_success">课表清理成功</string>
@@ -572,41 +556,4 @@
     <string name="light_primary_color">浅色模式主色</string>
     <string name="dark_primary_color">深色模式主色</string>
     <string name="theme_color_hint">说明：改变此颜色后，系统将作为种子色重新计算全应用配色方案。</string>
-
-    <!-- 备份和还原 -->
-    <string name="backup_err_empty">备份文件为空，无法恢复</string>
-    <string name="backup_err_corrupted">文件解析失败，数据可能已损坏</string>
-    <string name="backup_err_version_too_new">该备份数据版本过新，请升级 App 后再试</string>
-    <string name="item_backup_restore">备份与恢复</string>
-    <string name="desc_backup_restore">支持云盘与本地文件多渠道备份，保障课表数据安全</string>
-    <string name="section_data_maintenance">数据维护</string>
-    <string name="item_backup_data">备份数据</string>
-    <string name="desc_backup_data">将当前的课表及配置打包保存</string>
-    <string name="item_restore_data">恢复数据</string>
-    <string name="desc_restore_data">下载并覆盖本地课表配置数据</string>
-    <string name="section_service_config">服务配置</string>
-    <string name="item_webdav_config">WebDAV 参数配置</string>
-    <string name="desc_webdav_unconfigured">未配置网盘连接</string>
-    <string name="desc_webdav_connected">已连接: %1$s</string>
-    <string name="dialog_title_backup_target">选择备份目标渠道</string>
-    <string name="dialog_title_restore_source">选择恢复数据来源</string>
-    <string name="dialog_title_config_webdav">配置 WebDAV</string>
-    <string name="label_webdav_url">服务器地址 (URL)</string>
-    <string name="label_webdav_account">账号</string>
-    <string name="label_webdav_pwd_saved">密码已保存 (留空不修改)</string>
-    <string name="label_webdav_pwd_empty">应用独立密码</string>
-    <string name="label_webdav_path">云端备份位置</string>
-    <string name="desc_webdav_path_hint">实际数据将隔离保存在该目录下的 /Backup 文件夹中</string>
-    <string name="toast_operation_success">操作成功完成</string>
-    <string name="toast_operation_failed">操作失败: %1$s</string>
-    <string name="error_webdav_unconfigured">请先配置 WebDAV 服务</string>
-    <string name="error_stream_open_failed">无法打开数据流</string>
-    <string name="backup_err_connect_failed">连接失败，请检查配置或网络</string>
-    <string name="backup_err_upload_failed">文件上传失败</string>
-    <string name="backup_err_download_failed">下载备份失败</string>
-    <string name="backup_err_local_export_failed">本地导出失败</string>
-    <string name="backup_err_restore_failed_prefix">还原失败: %1$s</string>
-    <string name="backup_target_webdav">WebDAV 云同步</string>
-    <string name="backup_target_local_zip">本地 ZIP 文件</string>
-
 </resources>

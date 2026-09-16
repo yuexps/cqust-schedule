@@ -1,6 +1,7 @@
 package com.xingheyuzhuan.shiguangschedule.ui.settings.notification
 
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,6 +18,8 @@ import org.jetbrains.compose.resources.vectorResource
 import shiguangschedule.shared.generated.resources.Res
 import shiguangschedule.shared.generated.resources.a11y_details
 import shiguangschedule.shared.generated.resources.chevron_right_24px
+
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 /**
  * 设置项单行通用 UI 组件
@@ -38,6 +41,7 @@ fun SettingItemRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,

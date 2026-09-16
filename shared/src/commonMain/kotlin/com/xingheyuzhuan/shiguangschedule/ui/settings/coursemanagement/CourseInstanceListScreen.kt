@@ -2,6 +2,7 @@ package com.xingheyuzhuan.shiguangschedule.ui.settings.coursemanagement
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -224,6 +225,7 @@ fun CourseInstanceCard(
     Card(
         modifier = Modifier
             .height(IntrinsicSize.Max)
+            .clip(CardDefaults.shape)
             .combinedClickable(
                 onClick = { onCourseClick(courseId) },
                 onLongClick = { onCourseLongClick(courseId) }

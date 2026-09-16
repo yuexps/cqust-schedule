@@ -49,7 +49,7 @@ fun AlarmMinutesPicker(
             add(LocalizedAlarmOption(null, alarmOptionNone))
             add(LocalizedAlarmOption(0, alarmOptionOnTime))
             for (i in 1..60) {
-                add(LocalizedAlarmOption(i, i.toString()))
+                add(LocalizedAlarmOption(i, "提前 $i 分钟"))
             }
         }
     }
@@ -91,7 +91,7 @@ fun IcsExportDialog(
                     Text(stringResource(Res.string.label_select_alarm_time))
                     Spacer(modifier = Modifier.height(16.dp))
                     AlarmMinutesPicker(
-                        modifier = Modifier.width(150.dp),
+                        modifier = Modifier.width(180.dp),
                         onValueSelected = { alarmMinutes = it },
                         itemHeight = 48.dp
                     )

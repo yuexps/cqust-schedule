@@ -1,6 +1,8 @@
 package com.xingheyuzhuan.shiguangschedule.ui.settings.additional
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -67,6 +69,7 @@ fun StartScreenSelectionDialog(
                     ListItem(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
                             .clickable { onConfirm(screen) },
                         headlineContent = { Text(stringResource(screen.labelRes)) },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
@@ -111,6 +114,7 @@ fun ChannelSelectionDialog(
                     ListItem(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
                             .clickable { selectedPlatform = platform },
                         headlineContent = { Text(text = platform.title) },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),

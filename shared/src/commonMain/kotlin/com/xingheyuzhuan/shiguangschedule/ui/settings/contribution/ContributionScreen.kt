@@ -218,10 +218,10 @@ fun ContributorCard(
     }
 
     Card(
+        onClick = { onContributorClick(contributor.url) },
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .clickable { onContributorClick(contributor.url) }
     ) {
         Row(
             modifier = Modifier.padding(12.dp),

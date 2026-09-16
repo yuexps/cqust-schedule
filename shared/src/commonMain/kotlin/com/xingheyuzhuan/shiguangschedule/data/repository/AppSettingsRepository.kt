@@ -95,7 +95,13 @@ class AppSettingsRepository(
             prefs[AppSettingsModel.KEY_USE_DYNAMIC_COLOR] = newSettings.useDynamicColor
             prefs[AppSettingsModel.KEY_CUSTOM_LIGHT_PRIMARY] = newSettings.customLightPrimary
             prefs[AppSettingsModel.KEY_CUSTOM_DARK_PRIMARY] = newSettings.customDarkPrimary
-            prefs[AppSettingsModel.KEY_DEVELOPER_MODE_ENABLED] = newSettings.developerModeEnabled
+            prefs[AppSettingsModel.KEY_CQUST_STUDENT_ID] = newSettings.cqustStudentId
+            prefs[AppSettingsModel.KEY_CQUST_PASSWORD] = newSettings.cqustPassword
+            prefs[AppSettingsModel.KEY_CQUST_SEMESTER_ID] = newSettings.cqustSemesterId
+            prefs[AppSettingsModel.KEY_CQUST_IS_LOGGED_IN] = newSettings.cqustIsLoggedIn
+            prefs[AppSettingsModel.KEY_CQUST_LAST_SYNC_TIME] = newSettings.cqustLastSyncTime
+            prefs[AppSettingsModel.KEY_AUTO_CHECK_UPDATE_ENABLED] = newSettings.autoCheckUpdateEnabled
+            prefs[AppSettingsModel.KEY_LAST_UPDATE_CHECK_TIME] = newSettings.lastUpdateCheckTime
         }
     }
 

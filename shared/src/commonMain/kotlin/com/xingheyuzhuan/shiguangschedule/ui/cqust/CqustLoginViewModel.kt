@@ -71,7 +71,8 @@ class CqustLoginViewModel(
 
             val syncResult = cqustSyncManager.syncCourses(
                 studentId = sid,
-                passwordRaw = pwd
+                passwordRaw = pwd,
+                onProgress = { ToastManager.show(it) }
             )
 
             syncResult.fold(

@@ -30,13 +30,13 @@ class CqustSyncManager(
      *
      * @param studentId 学号
      * @param passwordRaw 密码
-     * @param isSilent 是否为后台静默同步
+     * @param onProgress 进度回调
      * @return 成功返回导入的课程门数，失败返回异常
      */
     suspend fun syncCourses(
         studentId: String,
         passwordRaw: String,
-        isSilent: Boolean = false
+        onProgress: ((String) -> Unit)? = null
     ): Result<Int> = withContext(Dispatchers.IO) {
         val sid = studentId.trim()
         val pwd = passwordRaw.trim()
@@ -52,7 +52,7 @@ class CqustSyncManager(
         val result = CqustEamsImporter.loginAndFetchCourses(
             studentId = sid,
             passwordRaw = pwd,
-            notifyFallback = !isSilent
+            onProgress = onProgress
         )
         if (!result.success) {
             return@withContext Result.failure(
@@ -132,8 +132,7 @@ class CqustSyncManager(
 
             val syncResult = syncCourses(
                 studentId = settings.cqustStudentId,
-                passwordRaw = settings.cqustPassword,
-                isSilent = true
+                passwordRaw = settings.cqustPassword
             )
             if (syncResult.isSuccess) {
                 appSettingsRepository.updateCqustLastSyncTime(now)

@@ -43,7 +43,6 @@ sealed interface Destination : NavKey {
     @Serializable data object CourseManagementList : Destination
     @Serializable data object StyleSettings : Destination
     @Serializable data object ThemeSettings : Destination
-    @Serializable data object BackupAndRestore : Destination
     @Serializable data object LanguageSettings : Destination
     @Serializable data object CqustLogin : Destination
 
@@ -99,7 +98,6 @@ val navSerializersModule = SerializersModule {
         subclass(Destination.CourseManagementList::class)
         subclass(Destination.StyleSettings::class)
         subclass(Destination.ThemeSettings::class)
-        subclass(Destination.BackupAndRestore::class)
         subclass(Destination.LanguageSettings::class)
         subclass(Destination.CqustLogin::class)
 

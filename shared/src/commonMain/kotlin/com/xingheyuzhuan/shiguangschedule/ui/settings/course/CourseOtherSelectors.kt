@@ -163,7 +163,21 @@ fun WeekSelectorBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = modalBottomSheetState,
-        dragHandle = { BottomSheetDefaults.DragHandle() }
+        dragHandle = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, bottom = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(width = 36.dp, height = 4.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f))
+                )
+            }
+        }
     ) {
         Column(
             modifier = Modifier
@@ -290,7 +304,21 @@ fun ColorPickerBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = modalBottomSheetState,
-        dragHandle = { BottomSheetDefaults.DragHandle() }
+        dragHandle = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, bottom = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(width = 36.dp, height = 4.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f))
+                )
+            }
+        }
     ) {
         Column(
             modifier = Modifier
@@ -346,8 +374,9 @@ fun ColorPickerBottomSheet(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
                         .clickable { applyToAll = !applyToAll }
-                        .padding(vertical = 8.dp)
+                        .padding(horizontal = 8.dp, vertical = 8.dp)
                 ) {
                     androidx.compose.material3.Checkbox(
                         checked = applyToAll,

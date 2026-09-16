@@ -1,6 +1,9 @@
 package com.xingheyuzhuan.shiguangschedule.ui.settings.additional
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -105,13 +108,15 @@ fun LanguageSettingScreen(
                 }
 
                 ListItem(
-                    modifier = Modifier.clickable {
-                        if (!isSelected) {
-                            currentTag = item.tag
-                            // 平台方法更新系统/平台语言
-                            PlatformLocaleManager.setLanguageTag(item.tag)
-                        }
-                    },
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable {
+                            if (!isSelected) {
+                                currentTag = item.tag
+                                // 平台方法更新系统/平台语言
+                                PlatformLocaleManager.setLanguageTag(item.tag)
+                            }
+                        },
                     headlineContent = { Text(text = item.name) },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     leadingContent = {

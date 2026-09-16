@@ -30,7 +30,6 @@ import com.xingheyuzhuan.shiguangschedule.ui.settings.SettingsViewModel
 import com.xingheyuzhuan.shiguangschedule.ui.settings.additional.LanguageSettingScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.additional.MoreOptionsScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.additional.OpenSourceLicensesScreen
-import com.xingheyuzhuan.shiguangschedule.ui.settings.backup.BackupScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.contribution.ContributionScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.conversion.CourseTableConversionScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.course.AddEditCourseScreen
@@ -48,18 +47,33 @@ import com.xingheyuzhuan.shiguangschedule.ui.settings.time.SingleScheduleEditScr
 import com.xingheyuzhuan.shiguangschedule.ui.settings.time.TimeScheduleManagementScreen
 
 import com.xingheyuzhuan.shiguangschedule.ui.theme.ShiguangScheduleTheme
-import com.xingheyuzhuan.shiguangschedule.ui.today.TodayScheduleScreen
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.xingheyuzhuan.shiguangschedule.data.api.cqust.CqustSyncManager
+import com.xingheyuzhuan.shiguangschedule.tool.UpdateChecker
+import com.xingheyuzhuan.shiguangschedule.tool.UpdatePlatform
+import com.xingheyuzhuan.shiguangschedule.tool.UpdateStatus
+import com.xingheyuzhuan.shiguangschedule.ui.cqust.CqustLoginScreen
+import com.xingheyuzhuan.shiguangschedule.ui.settings.additional.UpdateResultDialog
+import com.xingheyuzhuan.shiguangschedule.ui.theme.ShiguangScheduleTheme
+import com.xingheyuzhuan.shiguangschedule.ui.today.TodayScheduleScreen
+import kotlin.time.Clock
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import com.xingheyuzhuan.shiguangschedule.data.api.cqust.CqustSyncManager
-import com.xingheyuzhuan.shiguangschedule.ui.cqust.CqustLoginScreen
+import org.koin.core.qualifier.named
 
 @Composable
 fun App() {
     val viewModel: SettingsViewModel = koinViewModel()
     val state by viewModel.uiState.collectAsState()
     val cqustSyncManager: CqustSyncManager = koinInject()
+    val updateChecker: UpdateChecker = koinInject()
+    val appVersionName: String = koinInject(named("AppVersionName"))
+
+    var autoUpdateStatus by remember { mutableStateOf<UpdateStatus>(UpdateStatus.Idle) }
+    var showAutoUpdateDialog by remember { mutableStateOf(false) }
 
     if (state.isReady) {
         val isLoggedIn = state.appSettings.cqustIsLoggedIn
@@ -68,6 +82,22 @@ fun App() {
         LaunchedEffect(isLoggedIn) {
             if (isLoggedIn) {
                 cqustSyncManager.silentSyncIfNeeded()
+            }
+        }
+
+        // 冷启动时静默检查更新（24 小时冷却防抖，仅在发现新版本时弹窗提示）
+        LaunchedEffect(state.isReady, state.appSettings.autoCheckUpdateEnabled) {
+            if (state.appSettings.autoCheckUpdateEnabled) {
+                val currentTime = Clock.System.now().toEpochMilliseconds()
+                val cooldown = 24 * 60 * 60 * 1000L // 24小时防抖冷却
+                if (currentTime - state.appSettings.lastUpdateCheckTime > cooldown) {
+                    viewModel.onUpdateCheckTimeRecorded(currentTime)
+                    val status = updateChecker.checkUpdate(UpdatePlatform.GITHUB, appVersionName)
+                    if (status is UpdateStatus.Found) {
+                        autoUpdateStatus = status
+                        showAutoUpdateDialog = true
+                    }
+                }
             }
         }
 
@@ -85,6 +115,19 @@ fun App() {
             AppNavigation(
                 startDestination = startDest,
                 isLoggedIn = isLoggedIn
+            )
+
+            // 发现新版本时弹出的全局更新提醒弹窗
+            UpdateResultDialog(
+                showDialog = showAutoUpdateDialog,
+                updateStatus = autoUpdateStatus,
+                onDismiss = {
+                    showAutoUpdateDialog = false
+                    autoUpdateStatus = UpdateStatus.Idle
+                },
+                onDownloadClick = { targetUrl ->
+                    updateChecker.launchUpdate(targetUrl)
+                }
             )
         }
     } else {
@@ -208,7 +251,6 @@ fun ScreenContent(
         Destination.StyleSettings -> StyleSettingsScreen(onBack)
         Destination.QuickDelete -> QuickDeleteScreen(onBack)
         Destination.ThemeSettings -> ThemeSettingsScreen(onBack)
-        Destination.BackupAndRestore -> BackupScreen(onBack)
         Destination.LanguageSettings -> LanguageSettingScreen(onBack)
         Destination.CqustLogin -> CqustLoginScreen(
             onLoginSuccess = { onNavigate(Destination.CourseSchedule) },

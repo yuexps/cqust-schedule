@@ -65,6 +65,7 @@
 # 数据模型与数据库
 -dontwarn androidx.sqlite.**
 -keep class androidx.sqlite.** { *; }
--keep class com.xingheyuzhuan.shiguangschedule.shared.** { *; }
--keep class com.xingheyuzhuan.shiguangschedule.data.db.** { *; }
--keep class com.xingheyuzhuan.shiguangschedule.data.model.** { *; }
+-keep @androidx.room.Entity class * { *; }
+-keep @androidx.room.Dao interface * { *; }
+-keep @androidx.room.Database class * { *; }
+-keep class * extends androidx.room.RoomDatabase { *; }

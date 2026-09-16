@@ -2,7 +2,6 @@ package com.xingheyuzhuan.shiguangschedule.data.api.cqust
 
 import com.xingheyuzhuan.shiguangschedule.data.model.CourseImportExport
 import com.xingheyuzhuan.shiguangschedule.tool.cqustTripleDesEncrypt
-import com.xingheyuzhuan.shiguangschedule.ui.components.ToastManager
 import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -67,17 +66,17 @@ object CqustEamsImporter {
         studentId: String,
         passwordRaw: String,
         targetSemesterId: String? = null,
-        notifyFallback: Boolean = true
+        onProgress: ((String) -> Unit)? = null
     ): CqustImportResult {
         var lastResult = CqustImportResult(false, "教务系统连接失败")
         for ((index, baseUrl) in BASE_URLS.withIndex()) {
-            if (index > 0 && notifyFallback) {
+            if (index > 0 && onProgress != null) {
                 val reason = when {
                     lastResult.statusCode != null -> "异常(${lastResult.statusCode})"
                     lastResult.isTimeout -> "超时"
                     else -> "失败"
                 }
-                ToastManager.show("IPv6 $reason，切换 IPv4 尝试中...")
+                onProgress("IPv6 $reason，切换 IPv4 尝试中...")
             }
             lastResult = fetchCourses(baseUrl, studentId, passwordRaw, targetSemesterId)
             if (lastResult.success || lastResult.errorMessage?.contains("密码") == true) {
