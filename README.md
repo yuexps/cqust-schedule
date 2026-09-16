@@ -2,12 +2,10 @@
 
 # 重科课表
 
-一款为**重庆科技大学**校友量身定制的开源、无广告、极简课程表 APP。
+一款为**重庆科技大学**校友制作的开源、无广告、极简课程表 APP。
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL_v3-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Android_8.0+-green.svg)](https://github.com/yuexps/cqust-schedule)
-
-基于开源项目 [拾光课程表](https://github.com/XingHeYuZhuan/shiguangschedule) 定制开发。
 
 </div>
 
@@ -56,10 +54,4 @@
 
 本软件基于 GNU General Public License v3.0 (GPL-3.0) 开源。
 
-本项目基于 [拾光课程表 (shiguangschedule)](https://github.com/XingHeYuZhuan/shiguangschedule) 衍生并深度定制，感谢原作者 [@XingHeYuZhuan](https://github.com/XingHeYuZhuan) 以及所有开源贡献者们的卓越付出！
-
-### 原项目开发贡献者
-
-<a href="https://github.com/XingHeYuZhuan/shiguangschedule/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=XingHeYuZhuan/shiguangschedule" />
-</a>
+本项目基于 [拾光课程表 (shiguangschedule)](https://github.com/XingHeYuZhuan/shiguangschedule) 衍生，感谢原作者 [@XingHeYuZhuan](https://github.com/XingHeYuZhuan) 以及所有开源贡献者们的卓越付出！

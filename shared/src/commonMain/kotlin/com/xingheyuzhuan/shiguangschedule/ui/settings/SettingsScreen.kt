@@ -436,6 +436,11 @@ private fun AdvancedSettingsSection(onNavigate: (Destination) -> Unit) {
                 fontWeight = FontWeight.SemiBold
             )
             SettingItem(
+                title = stringResource(Res.string.item_course_conversion),
+                subtitle = stringResource(Res.string.desc_course_conversion),
+                onClick = { onNavigate(Destination.CourseTableConversion) }
+            )
+            SettingItem(
                 title = stringResource(Res.string.title_course_notification_settings),
                 subtitle = stringResource(Res.string.desc_notification_settings),
                 onClick = { onNavigate(Destination.NotificationSettings) }
@@ -730,91 +735,37 @@ private fun AccountSettingsSection(
                 }
             }
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
             // 同步课表
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 12.dp)
-                ) {
-                    Text(
-                        text = "同步课表",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    Text(
-                        text = "从重科教务系统更新课程",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Button(
-                    onClick = onSyncClick,
-                    enabled = !isSyncing,
-                    shape = RoundedCornerShape(10.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                ) {
+            SettingItem(
+                title = "同步课表",
+                subtitle = "从重科教务系统更新课程",
+                onClick = if (isSyncing) null else onSyncClick,
+                trailingContent = {
                     if (isSyncing) {
                         CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp),
+                            modifier = Modifier.size(20.dp),
                             strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.onPrimary
+                            color = MaterialTheme.colorScheme.primary
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("更新中", style = MaterialTheme.typography.labelLarge)
                     } else {
-                        Text("更新", style = MaterialTheme.typography.labelLarge)
+                        Icon(
+                            imageVector = vectorResource(Res.drawable.chevron_right_24px),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
-            }
-
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            )
 
             // 查看校历
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        uriHandler.openUri("https://www.cqust.edu.cn/index/js/xl.htm")
-                    }
-                    .padding(vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 12.dp)
-                ) {
-                    Text(
-                        text = "查看校历",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    Text(
-                        text = "查看学校行课时间与放假安排",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+            SettingItem(
+                title = "查看校历",
+                subtitle = "查看学校行课时间与放假安排",
+                onClick = {
+                    uriHandler.openUri("https://www.cqust.edu.cn/index/js/xl.htm")
                 }
-
-                OutlinedButton(
-                    onClick = {
-                        uriHandler.openUri("https://www.cqust.edu.cn/index/js/xl.htm")
-                    },
-                    shape = RoundedCornerShape(10.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Text("查看", style = MaterialTheme.typography.labelLarge)
-                }
-            }
+            )
         }
     }
 }

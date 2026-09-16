@@ -56,16 +56,13 @@ import shiguangschedule.shared.generated.resources.desc_backup_restore
 import shiguangschedule.shared.generated.resources.desc_export_ics_with_alarm
 import shiguangschedule.shared.generated.resources.desc_export_json_with_config
 import shiguangschedule.shared.generated.resources.desc_import_json
-import shiguangschedule.shared.generated.resources.desc_school_import_quick
 import shiguangschedule.shared.generated.resources.desc_sync_to_system_calendar
 import shiguangschedule.shared.generated.resources.item_backup_restore
 import shiguangschedule.shared.generated.resources.item_export_course_file
 import shiguangschedule.shared.generated.resources.item_export_ics_file
 import shiguangschedule.shared.generated.resources.item_import_course_file
-import shiguangschedule.shared.generated.resources.item_school_system_import
 import shiguangschedule.shared.generated.resources.item_sync_to_system_calendar
 import shiguangschedule.shared.generated.resources.section_file_conversion
-import shiguangschedule.shared.generated.resources.section_school_import
 import shiguangschedule.shared.generated.resources.section_sync
 import shiguangschedule.shared.generated.resources.snackbar_file_save_canceled
 import shiguangschedule.shared.generated.resources.snackbar_file_selection_canceled
@@ -74,7 +71,7 @@ import kotlin.time.Clock
 
 /**
  * 课表导入导出与转换设置主界面。
- * 整合了跨平台文件导入导出、教务系统导入、系统日历同步等功能。
+ * 整合了跨平台文件导入导出、系统日历同步等功能。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -223,24 +220,6 @@ fun CourseTableConversionScreen(
                         title = stringResource(Res.string.item_export_ics_file),
                         desc = stringResource(Res.string.desc_export_ics_with_alarm),
                         onClick = { viewModel.onExportIcsClick() }
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            Text(stringResource(Res.string.section_school_import), style = MaterialTheme.typography.titleLarge, modifier = Modifier.fillMaxWidth())
-            Spacer(Modifier.height(8.dp))
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    ConversionRow(
-                        title = stringResource(Res.string.item_school_system_import),
-                        desc = stringResource(Res.string.desc_school_import_quick),
-                        onClick = { onNavigate(Destination.CqustLogin) }
                     )
                 }
             }
