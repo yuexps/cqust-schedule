@@ -11,7 +11,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.KoinViewModel
+import shiguangschedule.shared.generated.resources.Res
+import shiguangschedule.shared.generated.resources.error_input_password
+import shiguangschedule.shared.generated.resources.error_input_student_id
+import shiguangschedule.shared.generated.resources.error_login_default
+import shiguangschedule.shared.generated.resources.toast_login_success
 
 data class CqustLoginUiState(
     val studentId: String = "",
@@ -57,16 +63,16 @@ class CqustLoginViewModel(
         val sid = state.studentId.trim()
         val pwd = state.password.trim()
 
-        if (sid.isEmpty()) {
-            _uiState.update { it.copy(errorMessage = "请输入学号") }
-            return
-        }
-        if (pwd.isEmpty()) {
-            _uiState.update { it.copy(errorMessage = "请输入密码") }
-            return
-        }
-
         viewModelScope.launch {
+            if (sid.isEmpty()) {
+                _uiState.update { it.copy(errorMessage = getString(Res.string.error_input_student_id)) }
+                return@launch
+            }
+            if (pwd.isEmpty()) {
+                _uiState.update { it.copy(errorMessage = getString(Res.string.error_input_password)) }
+                return@launch
+            }
+
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
             val syncResult = cqustSyncManager.syncCourses(
@@ -78,28 +84,19 @@ class CqustLoginViewModel(
             syncResult.fold(
                 onSuccess = { courseCount ->
                     _uiState.update { it.copy(isLoading = false) }
-                    ToastManager.show("登录成功，已导入 $courseCount 门课程")
+                    ToastManager.show(getString(Res.string.toast_login_success, courseCount))
                     onSuccess()
                 },
                 onFailure = { error ->
+                    val defaultMsg = getString(Res.string.error_login_default)
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = error.message ?: "登录失败，请检查账号密码或校园网络"
+                            errorMessage = error.message ?: defaultMsg
                         )
                     }
                 }
             )
-        }
-    }
-
-    /**
-     * 保存用户选定的开学日期
-     */
-    fun setSemesterStartDate(dateMillis: Long, onDone: () -> Unit) {
-        viewModelScope.launch {
-            appSettingsRepository.setSemesterStartDate(dateMillis)
-            onDone()
         }
     }
 }

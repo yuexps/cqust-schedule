@@ -20,9 +20,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -58,12 +56,10 @@ import org.jetbrains.compose.resources.stringArrayResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import shiguangschedule.shared.generated.resources.Res
-import shiguangschedule.shared.generated.resources.a11y_edit
 import shiguangschedule.shared.generated.resources.action_double_week
 import shiguangschedule.shared.generated.resources.action_single_week
 import shiguangschedule.shared.generated.resources.calendar_today_24px
 import shiguangschedule.shared.generated.resources.class_24px
-import shiguangschedule.shared.generated.resources.edit_24px
 import shiguangschedule.shared.generated.resources.label_section_range_suffix
 import shiguangschedule.shared.generated.resources.location_on_24px
 import shiguangschedule.shared.generated.resources.person_24px
@@ -95,8 +91,7 @@ private data class CourseDetailUIModel(
 @Composable
 fun CourseDetailBottomSheet(
     block: MergedCourseBlock,
-    onDismissRequest: () -> Unit,
-    onEditClick: (String) -> Unit
+    onDismissRequest: () -> Unit
 ) {
     val rawCoursesList = remember(block) {
         block.clusterCourses.ifEmpty { block.courses }
@@ -181,8 +176,6 @@ fun CourseDetailBottomSheet(
     val calendarIcon = vectorResource(Res.drawable.calendar_today_24px)
     val scheduleIcon = vectorResource(Res.drawable.schedule_24px)
     val noteIcon = vectorResource(Res.drawable.sticky_note_2_24px)
-    val editIcon = vectorResource(Res.drawable.edit_24px)
-    val editA11yText = stringResource(Res.string.a11y_edit)
 
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -234,10 +227,7 @@ fun CourseDetailBottomSheet(
                             locationIcon = locationIcon,
                             calendarIcon = calendarIcon,
                             scheduleIcon = scheduleIcon,
-                            noteIcon = noteIcon,
-                            editIcon = editIcon,
-                            editA11yText = editA11yText,
-                            onEditClick = onEditClick
+                            noteIcon = noteIcon
                         )
                     }
                 }
@@ -360,10 +350,7 @@ private fun CourseDetailItemContent(
     locationIcon: ImageVector,
     calendarIcon: ImageVector,
     scheduleIcon: ImageVector,
-    noteIcon: ImageVector,
-    editIcon: ImageVector,
-    editA11yText: String,
-    onEditClick: (String) -> Unit
+    noteIcon: ImageVector
 ) {
     Box(
         modifier = Modifier
@@ -371,9 +358,7 @@ private fun CourseDetailItemContent(
             .padding(horizontal = 24.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 48.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -404,17 +389,6 @@ private fun CourseDetailItemContent(
             if (!model.remark.isNullOrBlank()) {
                 DetailItem(noteIcon, model.remark)
             }
-        }
-
-        FilledIconButton(
-            onClick = { onEditClick(model.id) },
-            modifier = Modifier.align(Alignment.TopEnd).size(40.dp).clip(CircleShape),
-            colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-        ) {
-            Icon(editIcon, contentDescription = editA11yText, modifier = Modifier.size(20.dp))
         }
     }
 }

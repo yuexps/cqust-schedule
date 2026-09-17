@@ -15,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -41,8 +40,7 @@ fun CourseBlock(
     isVisualDemoted: Boolean,
     style: ScheduleGridStyleComposed,
     timeSlots: List<TimeSlot>,
-    modifier: Modifier = Modifier,
-    isFloating: Boolean = false // 标记当前块是否处于长按选中/悬浮状态
+    modifier: Modifier = Modifier
 ) {
     val course = courseWrapper.course
     val isDarkTheme = LocalIsDarkTheme.current
@@ -55,8 +53,7 @@ fun CourseBlock(
     }
     val fallbackColorAdapted: Color = if (isDarkTheme) style.courseColorMaps.first().dark else style.courseColorMaps.first().light
 
-    val currentAlpha = if (isFloating) 0.95f else style.courseBlockAlpha
-    val blockColor = (courseColorAdapted ?: fallbackColorAdapted).copy(alpha = currentAlpha)
+    val blockColor = (courseColorAdapted ?: fallbackColorAdapted).copy(alpha = style.courseBlockAlpha)
     val textColor = style.courseTextColor ?: MaterialTheme.colorScheme.onSurface
 
     // 字体大小
@@ -90,9 +87,9 @@ fun CourseBlock(
     }
 
     // 边框样式配置
-    val borderColor = if (isFloating) Color(0xFF2196F3) else MaterialTheme.colorScheme.outline
-    val borderWidth = if (isFloating) 2.dp else 1.dp
-    val borderAlpha = if (isFloating) 1.0f else style.courseBlockAlpha
+    val borderColor = MaterialTheme.colorScheme.outline
+    val borderWidth = 1.dp
+    val borderAlpha = style.courseBlockAlpha
     val shape = RoundedCornerShape(style.courseBlockCornerRadius)
 
     val borderModifier = when (style.borderType) {
@@ -110,25 +107,15 @@ fun CourseBlock(
                 )
             }
         }
-        else -> {
-            if (isFloating) Modifier.border(borderWidth, borderColor, shape) else Modifier
-        }
+        else -> Modifier
     }
 
     val horizontalAlignment = if (style.textAlignCenterHorizontal) Alignment.CenterHorizontally else Alignment.Start
     val verticalArrangement = if (style.textAlignCenterVertical) Arrangement.Center else Arrangement.Top
     val textAlign = if (style.textAlignCenterHorizontal) TextAlign.Center else TextAlign.Start
 
-    // 选中捏起时，增加三维物理阴影
-    val floatingShadowModifier = if (isFloating) {
-        Modifier.shadow(elevation = 8.dp, shape = shape, clip = false)
-    } else {
-        Modifier
-    }
-
     Box(
         modifier = modifier
-            .then(floatingShadowModifier)
             .fillMaxSize()
             .then(borderModifier)
             .clip(shape)
@@ -179,21 +166,21 @@ fun CourseBlock(
         }
 
         // 当单课不是当前周时，进行干净的全局遮罩染色与虚化斜线绘制
-        if (isVisualDemoted && !isFloating) {
+        if (isVisualDemoted) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(color = (if (isDarkTheme) Color.Black else Color.White).copy(alpha = 0.618f))
-                    .drawBehind {
-                        val stripeWidth = 5.dp.toPx()
-                        val stripeColor = (if (isDarkTheme) Color.White else Color.Black).copy(alpha = 0.06f)
-                        val brush = Brush.linearGradient(
-                            0.0f to stripeColor, 0.45f to stripeColor,
-                            0.55f to Color.Transparent, 1.0f to Color.Transparent,
-                            start = Offset(0f, 0f), end = Offset(stripeWidth, stripeWidth), tileMode = TileMode.Repeated
-                        )
-                        drawRect(brush = brush)
-                    }
+                .drawBehind {
+                    val stripeWidth = 5.dp.toPx()
+                    val stripeColor = (if (isDarkTheme) Color.White else Color.Black).copy(alpha = 0.06f)
+                    val brush = Brush.linearGradient(
+                        0.0f to stripeColor, 0.45f to stripeColor,
+                        0.55f to Color.Transparent, 1.0f to Color.Transparent,
+                        start = Offset(0f, 0f), end = Offset(stripeWidth, stripeWidth), tileMode = TileMode.Repeated
+                    )
+                    drawRect(brush = brush)
+                }
             )
         }
     }

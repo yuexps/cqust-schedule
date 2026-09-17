@@ -374,7 +374,6 @@ fun ScheduleGridContent(
     val gridActions = remember {
         object : ScheduleGridActions {
             override fun onCourseBlockClicked(block: MergedCourseBlock) {}
-            override fun onGridCellClicked(day: Int, section: Int) {}
             override fun onTimeSlotClicked() {}
         }
     }

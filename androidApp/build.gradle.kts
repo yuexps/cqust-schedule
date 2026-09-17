@@ -28,8 +28,8 @@ android {
         applicationId = "yuexps.cqust.schedule"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 42
-        versionName = "3.1.1"
+        versionCode = 43
+        versionName = "3.1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -84,6 +84,15 @@ android {
     androidResources {
         generateLocaleConfig = true
         localeFilters += listOf("zh", "zh-rCN", "zh-rTW", "en")
+    }
+
+    packaging {
+        dex {
+            useLegacyPackaging = true
+        }
+        jniLibs {
+            useLegacyPackaging = true
+        }
     }
 }
 

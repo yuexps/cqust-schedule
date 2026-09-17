@@ -36,9 +36,6 @@ sealed interface Destination : NavKey {
     @Serializable data object NotificationSettings : Destination
     @Serializable data object MoreOptions : Destination
     @Serializable data object OpenSourceLicenses : Destination
-    @Serializable data object QuickActions : Destination
-    @Serializable data object TweakSchedule : Destination
-    @Serializable data object QuickDelete : Destination
     @Serializable data object ContributionList : Destination
     @Serializable data object CourseManagementList : Destination
     @Serializable data object StyleSettings : Destination
@@ -47,10 +44,6 @@ sealed interface Destination : NavKey {
     @Serializable data object CqustLogin : Destination
 
     // --- 动态传参页面 ---
-    @Serializable
-    data class AddEditCourse(
-        val courseId: String? = null
-    ) : Destination
 
     @Serializable
     data class CourseManagementDetail(
@@ -91,9 +84,6 @@ val navSerializersModule = SerializersModule {
         subclass(Destination.NotificationSettings::class)
         subclass(Destination.MoreOptions::class)
         subclass(Destination.OpenSourceLicenses::class)
-        subclass(Destination.QuickActions::class)
-        subclass(Destination.TweakSchedule::class)
-        subclass(Destination.QuickDelete::class)
         subclass(Destination.ContributionList::class)
         subclass(Destination.CourseManagementList::class)
         subclass(Destination.StyleSettings::class)
@@ -102,7 +92,6 @@ val navSerializersModule = SerializersModule {
         subclass(Destination.CqustLogin::class)
 
         // 带参数据类
-        subclass(Destination.AddEditCourse::class)
         subclass(Destination.CourseManagementDetail::class)
         subclass(Destination.SingleScheduleEdit::class)
         subclass(Destination.ComboScheduleEdit::class)

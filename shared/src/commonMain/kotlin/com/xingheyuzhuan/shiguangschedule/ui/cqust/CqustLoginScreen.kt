@@ -58,14 +58,34 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.viewmodel.koinViewModel
 import shiguangschedule.shared.generated.resources.Res
+import shiguangschedule.shared.generated.resources.a11y_back
+import shiguangschedule.shared.generated.resources.a11y_hide_password
+import shiguangschedule.shared.generated.resources.a11y_show_password
+import shiguangschedule.shared.generated.resources.action_logging_in
+import shiguangschedule.shared.generated.resources.action_login_and_import
 import shiguangschedule.shared.generated.resources.arrow_back_24px
 import shiguangschedule.shared.generated.resources.info_24px
+import shiguangschedule.shared.generated.resources.label_password
+import shiguangschedule.shared.generated.resources.label_semester_start_date
+import shiguangschedule.shared.generated.resources.label_student_id
 import shiguangschedule.shared.generated.resources.lock_24px
+import shiguangschedule.shared.generated.resources.login_tip_after_sync_prefix
+import shiguangschedule.shared.generated.resources.login_tip_check_calendar_middle
+import shiguangschedule.shared.generated.resources.login_tip_disclaimer_content
+import shiguangschedule.shared.generated.resources.login_tip_disclaimer_title
+import shiguangschedule.shared.generated.resources.login_tip_official_calendar
 import shiguangschedule.shared.generated.resources.person_24px
+import shiguangschedule.shared.generated.resources.placeholder_password
+import shiguangschedule.shared.generated.resources.placeholder_student_id
 import shiguangschedule.shared.generated.resources.school_24px
+import shiguangschedule.shared.generated.resources.school_name
+import shiguangschedule.shared.generated.resources.symbol_period
+import shiguangschedule.shared.generated.resources.title_cqust_login
+import shiguangschedule.shared.generated.resources.title_cqust_sync
 import shiguangschedule.shared.generated.resources.visibility_24px
 import shiguangschedule.shared.generated.resources.visibility_off_24px
 
@@ -86,14 +106,17 @@ fun CqustLoginScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("教务系统登录") },
+                title = { Text(stringResource(Res.string.title_cqust_login)) },
                 navigationIcon = {
                     if (onBack != null) {
                         IconButton(
                             onClick = onBack,
                             modifier = Modifier.clip(CircleShape)
                         ) {
-                            Icon(vectorResource(Res.drawable.arrow_back_24px), contentDescription = "返回")
+                            Icon(
+                                imageVector = vectorResource(Res.drawable.arrow_back_24px),
+                                contentDescription = stringResource(Res.string.a11y_back)
+                            )
                         }
                     }
                 }
@@ -132,7 +155,7 @@ fun CqustLoginScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "重庆科技大学",
+                text = stringResource(Res.string.school_name),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -140,7 +163,7 @@ fun CqustLoginScreen(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "教务系统课表同步",
+                text = stringResource(Res.string.title_cqust_sync),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -165,8 +188,8 @@ fun CqustLoginScreen(
                     OutlinedTextField(
                         value = uiState.studentId,
                         onValueChange = { viewModel.onStudentIdChange(it) },
-                        label = { Text("学号") },
-                        placeholder = { Text("请输入学号") },
+                        label = { Text(stringResource(Res.string.label_student_id)) },
+                        placeholder = { Text(stringResource(Res.string.placeholder_student_id)) },
                         leadingIcon = {
                             Icon(
                                 imageVector = vectorResource(Res.drawable.person_24px),
@@ -189,8 +212,8 @@ fun CqustLoginScreen(
                     OutlinedTextField(
                         value = uiState.password,
                         onValueChange = { viewModel.onPasswordChange(it) },
-                        label = { Text("密码") },
-                        placeholder = { Text("请输入密码") },
+                        label = { Text(stringResource(Res.string.label_password)) },
+                        placeholder = { Text(stringResource(Res.string.placeholder_password)) },
                         leadingIcon = {
                             Icon(
                                 imageVector = vectorResource(Res.drawable.lock_24px),
@@ -210,7 +233,10 @@ fun CqustLoginScreen(
                                         if (passwordVisible) Res.drawable.visibility_24px
                                         else Res.drawable.visibility_off_24px
                                     ),
-                                    contentDescription = if (passwordVisible) "隐藏密码" else "显示密码",
+                                    contentDescription = stringResource(
+                                        if (passwordVisible) Res.string.a11y_hide_password
+                                        else Res.string.a11y_show_password
+                                    ),
                                     modifier = Modifier.size(22.dp)
                                 )
                             }
@@ -269,10 +295,10 @@ fun CqustLoginScreen(
                                 strokeWidth = 2.dp
                             )
                             Spacer(modifier = Modifier.width(10.dp))
-                            Text("正在登录...")
+                            Text(stringResource(Res.string.action_logging_in))
                         } else {
                             Text(
-                                text = "登录并导入课表",
+                                text = stringResource(Res.string.action_login_and_import),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -313,10 +339,16 @@ fun CqustLoginScreen(
                         )
 
                         val calendarUrl = "https://www.cqust.edu.cn/index/js/xl.htm"
+                        val prefix = stringResource(Res.string.login_tip_after_sync_prefix)
+                        val dateLabel = stringResource(Res.string.label_semester_start_date)
+                        val middle = stringResource(Res.string.login_tip_check_calendar_middle)
+                        val officialCalendar = stringResource(Res.string.login_tip_official_calendar)
+                        val period = stringResource(Res.string.symbol_period)
+
                         val promptAnnotated = buildAnnotatedString {
-                            append("课表同步完成后，请前往设置配置")
-                            append("行课起始日期")
-                            append("。如不确定具体日期，可查阅")
+                            append(prefix)
+                            append(dateLabel)
+                            append(middle)
                             withLink(
                                 LinkAnnotation.Url(
                                     url = calendarUrl,
@@ -329,9 +361,9 @@ fun CqustLoginScreen(
                                     )
                                 )
                             ) {
-                                append("重科官网校历")
+                                append(officialCalendar)
                             }
-                            append("。")
+                            append(period)
                         }
 
                         Text(
@@ -354,13 +386,13 @@ fun CqustLoginScreen(
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = "本 APP 为第三方课表查看工具，非学校官方发布。",
+                            text = stringResource(Res.string.login_tip_disclaimer_title),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f)
                         )
                         Text(
-                            text = "数据仅保存在当前设备本地，保障隐私安全；本课表仅供参考，不保证实时准确，请以教务处通知为准！",
+                            text = stringResource(Res.string.login_tip_disclaimer_content),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f),
                             lineHeight = MaterialTheme.typography.labelSmall.lineHeight

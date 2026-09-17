@@ -69,16 +69,4 @@ class CourseNameListViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
-
-    /**
-     *获取当前课表ID，并请求 Repository 删除指定名称的课程实例。
-     * @param courseNames 要删除的课程名称列表。
-     */
-    suspend fun deleteSelectedCourses(courseNames: List<String>) {
-        if (courseNames.isEmpty()) return
-        val appSettings = appSettingsRepository.getAppSettings().first()
-        val tableId = appSettings.currentCourseTableId
-
-        courseTableRepository.deleteCoursesByNames(tableId, courseNames)
-    }
 }

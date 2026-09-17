@@ -109,51 +109,58 @@ class AppSettingsRepository(
 
     /**
      * 根据课表ID获取一次性配置快照。
+     * 防御性保证：无论历史库数据为何值，读出的每周首日均锁定为周一。
      */
     suspend fun getCourseConfigOnce(tableId: String): CourseTableConfig? {
-        return courseTableConfigDao.getConfigOnce(tableId)
+        return courseTableConfigDao.getConfigOnce(tableId)?.copy(firstDayOfWeek = DayOfWeek.MONDAY.isoDayNumber)
     }
 
     /**
      * 根据课表ID实时获取配置数据流。
+     * 防御性保证：流中发射的每周首日均锁定为周一。
      */
     fun getCourseTableConfigFlow(courseTableId: String): Flow<CourseTableConfig?> {
-        return courseTableConfigDao.getConfigById(courseTableId)
+        return courseTableConfigDao.getConfigById(courseTableId).map { config ->
+            config?.copy(firstDayOfWeek = DayOfWeek.MONDAY.isoDayNumber)
+        }
     }
 
     /**
      * 更新或插入特定课表的物理配置。
+     * 强制锁定每周起始日为周一，并确保开学起始日期对齐到当周周一。
      */
     suspend fun insertOrUpdateCourseConfig(newConfig: CourseTableConfig) {
-        val constrainedConfig = when {
-            newConfig.firstDayOfWeek == DayOfWeek.SUNDAY.isoDayNumber -> {
-                newConfig.copy(showWeekends = true)
+        val alignedStartDate = newConfig.semesterStartDate?.let { dateStr ->
+            try {
+                val parsed = LocalDate.parse(dateStr, DATE_FORMATTER)
+                getPreviousOrSameDayOfWeek(parsed, DayOfWeek.MONDAY).format(DATE_FORMATTER)
+            } catch (_: Exception) {
+                dateStr
             }
-            !newConfig.showWeekends -> {
-                newConfig.copy(firstDayOfWeek = DayOfWeek.MONDAY.isoDayNumber)
-            }
-            else -> newConfig
         }
+        val constrainedConfig = newConfig.copy(
+            firstDayOfWeek = DayOfWeek.MONDAY.isoDayNumber,
+            semesterStartDate = alignedStartDate
+        )
         courseTableConfigDao.insertOrUpdate(constrainedConfig)
     }
 
     // 业务算法 (时间、周次计算)
 
     /**
-     * 核心周次偏移算法。
+     * 核心周次偏移算法。全系统基准已锁定周一。
      */
     fun getWeekIndexAtDate(
         targetDate: LocalDate,
         startDateStr: String?,
-        firstDayOfWeekInt: Int
+        firstDayOfWeekInt: Int = DayOfWeek.MONDAY.isoDayNumber
     ): Int? {
         if (startDateStr.isNullOrEmpty()) return null
         return try {
-            val targetFirstDayOfWeek = DayOfWeek(firstDayOfWeekInt)
             val parsedStartDate = LocalDate.parse(startDateStr, DATE_FORMATTER)
 
-            val alignedStartDate = getPreviousOrSameDayOfWeek(parsedStartDate, targetFirstDayOfWeek)
-            val alignedTargetDate = getPreviousOrSameDayOfWeek(targetDate, targetFirstDayOfWeek)
+            val alignedStartDate = getPreviousOrSameDayOfWeek(parsedStartDate, DayOfWeek.MONDAY)
+            val alignedTargetDate = getPreviousOrSameDayOfWeek(targetDate, DayOfWeek.MONDAY)
 
             val diffDays = alignedTargetDate.toEpochDays() - alignedStartDate.toEpochDays()
             val diffWeeks = (diffDays / 7).toInt()
@@ -178,7 +185,7 @@ class AppSettingsRepository(
             val rawWeek = getWeekIndexAtDate(
                 targetDate = today,
                 startDateStr = config.semesterStartDate,
-                firstDayOfWeekInt = config.firstDayOfWeek
+                firstDayOfWeekInt = DayOfWeek.MONDAY.isoDayNumber
             ) ?: return@map null
             if (rawWeek in 1..config.semesterTotalWeeks) rawWeek else null
         }
@@ -195,13 +202,13 @@ class AppSettingsRepository(
             ?: COURSE_CONFIG_TEMPLATE.copy(courseTableId = currentCourseId)
 
         val newStartDate = if (week != null) {
-            calculateSemesterStartDate(week, currentConfig.firstDayOfWeek)
+            calculateSemesterStartDate(week, DayOfWeek.MONDAY.isoDayNumber)
         } else {
             null
         }
 
         val updatedConfig = currentConfig.copy(semesterStartDate = newStartDate)
-        courseTableConfigDao.insertOrUpdate(updatedConfig)
+        insertOrUpdateCourseConfig(updatedConfig)
     }
 
     /**
@@ -210,13 +217,21 @@ class AppSettingsRepository(
     suspend fun setSemesterStartDate(dateMillis: Long) {
         val selectedDate = Instant.fromEpochMilliseconds(dateMillis)
             .toLocalDateTime(TimeZone.currentSystemDefault()).date
-        setSemesterStartDate(selectedDate.toString())
+        val alignedStartDate = getPreviousOrSameDayOfWeek(selectedDate, DayOfWeek.MONDAY)
+        setSemesterStartDate(alignedStartDate.toString())
     }
 
     /**
      * 设置当前课表的学期起始日期（传入 YYYY-MM-DD 字符串）。
      */
     suspend fun setSemesterStartDate(dateStr: String) {
+        val alignedDateStr = try {
+            val parsed = LocalDate.parse(dateStr)
+            getPreviousOrSameDayOfWeek(parsed, DayOfWeek.MONDAY).toString()
+        } catch (_: Exception) {
+            dateStr
+        }
+
         val appSettings = getAppSettingsOnce()
         var currentCourseId = appSettings.currentCourseTableId
         if (currentCourseId.isEmpty()) {
@@ -232,7 +247,7 @@ class AppSettingsRepository(
         val currentConfig = courseTableConfigDao.getConfigOnce(currentCourseId)
             ?: COURSE_CONFIG_TEMPLATE.copy(courseTableId = currentCourseId)
 
-        val updatedConfig = currentConfig.copy(semesterStartDate = dateStr)
+        val updatedConfig = currentConfig.copy(semesterStartDate = alignedDateStr)
         insertOrUpdateCourseConfig(updatedConfig)
     }
 

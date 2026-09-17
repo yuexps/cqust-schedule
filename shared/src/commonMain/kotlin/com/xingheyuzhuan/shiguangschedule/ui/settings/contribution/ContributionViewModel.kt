@@ -8,7 +8,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.KoinViewModel
+import shiguangschedule.shared.generated.resources.Res
+import shiguangschedule.shared.generated.resources.error_load_failed
 
 /**
  * UI 状态的密封类
@@ -41,7 +44,7 @@ class ContributionViewModel(
                 val data = contributionRepository.getContributions()
                 _uiState.value = ContributionUiState.Success(data)
             } catch (e: Exception) {
-                _uiState.value = ContributionUiState.Error(e.message ?: "未知错误")
+                _uiState.value = ContributionUiState.Error(e.message ?: getString(Res.string.error_load_failed))
             }
         }
     }

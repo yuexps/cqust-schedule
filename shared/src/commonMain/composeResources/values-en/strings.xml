@@ -198,27 +198,18 @@
     <string name="item_total_weeks">Total weeks</string>
     <string name="desc_total_weeks">Set total number of weeks in semester</string>
     <string name="status_total_weeks_format">%1$d weeks</string>
-    <string name="item_current_week">Current week</string>
-    <string name="desc_current_week_manual">Manually adjust current week</string>
-    <string name="status_set_start_date_first">Please set start date first</string>
     <string name="status_current_week_format">Week %1$d</string>
-    <string name="item_first_day_of_week">Week starts on</string>
-    <string name="desc_first_day_of_week">Set which day the week starts on</string>
-    <string name="day_of_week_monday">Monday</string>
-    <string name="day_of_week_sunday">Sunday</string>
     <string name="item_schedule_tweak">Schedule adjustment</string>
     <string name="desc_schedule_tweak">Move all courses from one date to another</string>
     <string name="section_title_advanced_features">Advanced features</string>
-    <string name="item_course_conversion">Import/Export schedule</string>
-    <string name="desc_course_conversion">Supports file, academic affairs import and sync</string>
+    <string name="item_course_conversion">Export Schedule</string>
+    <string name="desc_course_conversion">Export JSON/ICS file and sync with system calendar</string>
     <string name="desc_notification_settings">Manage course reminder notifications</string>
     <string name="desc_manage_course_tables">Manage multiple schedules, switch or delete</string>
     <string name="item_more_options">More</string>
     <string name="desc_more_options">Additional information and options</string>
     <string name="a11y_more_options">More options</string>
     <string name="dialog_title_select_total_weeks">Select total weeks</string>
-    <string name="dialog_title_manual_set_week">Manually set current week</string>
-    <string name="dialog_title_set_first_day_of_week">Set week start day</string>
     <string name="text_no_course_tables">No schedules available</string>
     <string name="course_table_id_prefix">ID: %1$s</string>
     <string name="course_table_created_at_prefix">Created: %1$s</string>
@@ -238,8 +229,22 @@
     <string name="toast_delete_table_success">%1$s deleted</string>
     <string name="toast_delete_last_table_failed">Cannot delete the last schedule</string>
     <string name="a11y_current_table">Current schedule</string>
-    <string name="item_course_management">Course Management</string>
-    <string name="desc_course_management">View and edit all courses by name</string>
+    <string name="item_course_management">Courses Overview</string>
+    <string name="desc_course_management">View synced courses and period details</string>
+
+    <!-- Academic Account -->
+    <string name="title_academic_account">Academic Account</string>
+    <string name="label_student_id">Student ID</string>
+    <string name="school_name">Chongqing University of Science and Technology</string>
+    <string name="status_not_logged_in">Not logged in</string>
+    <string name="action_logout">Logout</string>
+    <string name="action_login">Login</string>
+    <string name="dialog_title_logout">Log out</string>
+    <string name="dialog_message_logout_confirm">Are you sure you want to log out of your academic account?</string>
+    <string name="item_sync_schedule">Sync Schedule</string>
+    <string name="desc_sync_schedule">Update courses from academic system</string>
+    <string name="item_school_calendar">School Calendar</string>
+    <string name="desc_school_calendar">Academic calendar and holidays</string>
 
     <!-- Course Management -->
     <string name="title_selected_items_count">%1$d items selected</string>
@@ -566,6 +571,50 @@
     <string name="schedule_type_exclusive">Course-Exclusive</string>
     <string name="schedule_type_public">Public</string>
     <string name="schedule_type_combo">Combo</string>
-    <string name="desc_schedule_management">Supports public schedules and combined schedules</string>
     <string name="action_apply_to_all_schemes">Apply to all schemes</string>
+
+    <!-- Academic System Login -->
+    <string name="title_cqust_login">Academic System Login</string>
+    <string name="title_cqust_sync">Academic Schedule Sync</string>
+    <string name="label_password">Password</string>
+    <string name="placeholder_student_id">Enter student ID</string>
+    <string name="placeholder_password">Enter password</string>
+    <string name="a11y_hide_password">Hide password</string>
+    <string name="a11y_show_password">Show password</string>
+    <string name="action_logging_in">Logging in...</string>
+    <string name="text_login_tip_title">Tip</string>
+    <string name="text_login_tip_content">Please use your Chongqing University of Science and Technology credentials. Data is saved strictly on this device.</string>
+    <string name="toast_login_success">Login successful, imported %1$d courses</string>
+    <string name="error_input_student_id">Please enter student ID</string>
+    <string name="error_input_password">Please enter password</string>
+    <string name="error_login_default">Login failed, please check account, password or network</string>
+
+    <!-- Semester Start Date Prompt -->
+    <string name="dialog_title_set_start_date">Set Semester Start Date</string>
+    <string name="dialog_desc_set_start_date">Please select the semester start date (Monday of Week 1) to accurately calculate weeks and display course schedules.</string>
+    <string name="dialog_tip_check_calendar_prefix">Tip: If unsure, you can check the Chongqing University of Science and Technology </string>
+    <string name="dialog_tip_official_calendar">Official Calendar</string>
+    <string name="dialog_tip_check_calendar_suffix"> to confirm.</string>
+    <string name="action_select_start_date">Select Date</string>
+    <string name="action_set_later">Set Later</string>
+
+    <!-- Export & Overview -->
+    <string name="title_course_export">Export Schedule</string>
+    <string name="section_file_export">File Export</string>
+    <string name="label_class_periods_count">%1$d periods</string>
+
+    <!-- General Toast & Settings -->
+    <string name="toast_no_saved_credentials">No saved credentials found, please log in again</string>
+    <string name="toast_sync_courses_success">Schedule synced, %1$d courses in total</string>
+    <string name="toast_sync_courses_failed">Sync failed: %1$s</string>
+    <string name="item_qq_group">QQ Group</string>
+    <string name="toast_qq_copied">Copied group %1$s, please search and add in QQ</string>
+    <string name="action_login_and_import">Log In &amp; Import Schedule</string>
+    <string name="login_tip_after_sync_prefix">After syncing schedule, please go to Settings to configure </string>
+    <string name="label_semester_start_date">Semester Start Date</string>
+    <string name="login_tip_check_calendar_middle">. If unsure, check the </string>
+    <string name="login_tip_official_calendar">official university calendar</string>
+    <string name="symbol_period">.</string>
+    <string name="login_tip_disclaimer_title">This app is a third-party schedule viewer, not officially published.</string>
+    <string name="login_tip_disclaimer_content">Data is stored locally on this device only to ensure privacy. The schedule is for reference only; please refer to official university notices for real-time accuracy.</string>
 </resources>

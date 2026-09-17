@@ -17,15 +17,18 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.toLocalDateTime
 import com.xingheyuzhuan.shiguangschedule.data.api.cqust.CqustSyncManager
 import com.xingheyuzhuan.shiguangschedule.ui.components.ToastManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.jetbrains.compose.resources.getString
 import org.koin.core.annotation.KoinViewModel
+import shiguangschedule.shared.generated.resources.Res
+import shiguangschedule.shared.generated.resources.toast_no_saved_credentials
+import shiguangschedule.shared.generated.resources.toast_sync_courses_failed
+import shiguangschedule.shared.generated.resources.toast_sync_courses_success
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -103,12 +106,7 @@ class SettingsViewModel(
     fun onShowWeekendsChanged(show: Boolean) {
         viewModelScope.launch {
             uiState.value.courseConfig?.let { currentConfig ->
-                val update = if (!show) {
-                    currentConfig.copy(showWeekends = false, firstDayOfWeek = DayOfWeek.MONDAY.isoDayNumber)
-                } else {
-                    currentConfig.copy(showWeekends = true)
-                }
-                appSettingsRepository.insertOrUpdateCourseConfig(update)
+                appSettingsRepository.insertOrUpdateCourseConfig(currentConfig.copy(showWeekends = show))
             }
         }
     }
@@ -119,14 +117,7 @@ class SettingsViewModel(
     fun onSemesterStartDateSelected(selectedDateMillis: Long?) {
         viewModelScope.launch {
             val dateMillis = selectedDateMillis ?: return@launch
-            uiState.value.courseConfig?.let { currentConfig ->
-                val selectedDate = Instant.fromEpochMilliseconds(dateMillis)
-                    .toLocalDateTime(TimeZone.currentSystemDefault()).date
-                val newConfig = currentConfig.copy(
-                    semesterStartDate = selectedDate.toString()
-                )
-                appSettingsRepository.insertOrUpdateCourseConfig(newConfig)
-            }
+            appSettingsRepository.setSemesterStartDate(dateMillis)
         }
     }
 
@@ -147,17 +138,6 @@ class SettingsViewModel(
     fun onCurrentWeekManuallySet(weekNumber: Int?) {
         viewModelScope.launch {
             appSettingsRepository.setSemesterStartDateFromWeek(weekNumber)
-        }
-    }
-
-    /**
-     * 更新每周起始日
-     */
-    fun onFirstDayOfWeekSelected(dayOfWeekInt: Int) {
-        viewModelScope.launch {
-            uiState.value.courseConfig?.let { currentConfig ->
-                appSettingsRepository.insertOrUpdateCourseConfig(currentConfig.copy(firstDayOfWeek = dayOfWeekInt))
-            }
         }
     }
 
@@ -290,7 +270,9 @@ class SettingsViewModel(
         val pwd = settings.cqustPassword
 
         if (sid.isEmpty() || pwd.isEmpty()) {
-            ToastManager.show("未检测到已保存的账号密码，请重新登录")
+            viewModelScope.launch {
+                ToastManager.show(getString(Res.string.toast_no_saved_credentials))
+            }
             onNeedLogin()
             return
         }
@@ -306,11 +288,11 @@ class SettingsViewModel(
             syncResult.fold(
                 onSuccess = { count ->
                     _isSyncing.value = false
-                    ToastManager.show("课表已同步，共 $count 门课程")
+                    ToastManager.show(getString(Res.string.toast_sync_courses_success, count))
                 },
                 onFailure = { error ->
                     _isSyncing.value = false
-                    ToastManager.show("同步失败：${error.message}")
+                    ToastManager.show(getString(Res.string.toast_sync_courses_failed, error.message.orEmpty()))
                 }
             )
         }

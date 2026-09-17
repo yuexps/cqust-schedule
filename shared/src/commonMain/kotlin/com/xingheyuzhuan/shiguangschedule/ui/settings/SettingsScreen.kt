@@ -48,17 +48,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.xingheyuzhuan.shiguangschedule.Destination
 import com.xingheyuzhuan.shiguangschedule.ui.components.DatePickerModal
 import com.xingheyuzhuan.shiguangschedule.ui.components.NativeNumberPicker
-import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
@@ -66,15 +64,23 @@ import org.koin.compose.viewmodel.koinViewModel
 import shiguangschedule.shared.generated.resources.Res
 import shiguangschedule.shared.generated.resources.action_cancel
 import shiguangschedule.shared.generated.resources.action_confirm
+import shiguangschedule.shared.generated.resources.action_login
+import shiguangschedule.shared.generated.resources.action_logout
 import shiguangschedule.shared.generated.resources.chevron_right_24px
-import shiguangschedule.shared.generated.resources.person_24px
-import shiguangschedule.shared.generated.resources.refresh_24px
+import shiguangschedule.shared.generated.resources.desc_course_conversion
+import shiguangschedule.shared.generated.resources.desc_school_calendar
+import shiguangschedule.shared.generated.resources.desc_sync_schedule
+import shiguangschedule.shared.generated.resources.dialog_message_logout_confirm
+import shiguangschedule.shared.generated.resources.dialog_title_logout
+import shiguangschedule.shared.generated.resources.item_course_conversion
+import shiguangschedule.shared.generated.resources.item_school_calendar
+import shiguangschedule.shared.generated.resources.item_sync_schedule
+import shiguangschedule.shared.generated.resources.school_name
+import shiguangschedule.shared.generated.resources.status_not_logged_in
+import shiguangschedule.shared.generated.resources.title_academic_account
 import shiguangschedule.shared.generated.resources.date_format_year_month_day
-import shiguangschedule.shared.generated.resources.day_of_week_monday
-import shiguangschedule.shared.generated.resources.day_of_week_sunday
 import shiguangschedule.shared.generated.resources.desc_course_management
 import shiguangschedule.shared.generated.resources.desc_current_week_manual
-import shiguangschedule.shared.generated.resources.desc_first_day_of_week
 import shiguangschedule.shared.generated.resources.desc_manage_course_tables
 import shiguangschedule.shared.generated.resources.desc_more_options
 import shiguangschedule.shared.generated.resources.desc_notification_settings
@@ -87,10 +93,8 @@ import shiguangschedule.shared.generated.resources.desc_show_weekends
 import shiguangschedule.shared.generated.resources.desc_total_weeks
 import shiguangschedule.shared.generated.resources.dialog_title_manual_set_week
 import shiguangschedule.shared.generated.resources.dialog_title_select_total_weeks
-import shiguangschedule.shared.generated.resources.dialog_title_set_first_day_of_week
 import shiguangschedule.shared.generated.resources.item_course_management
 import shiguangschedule.shared.generated.resources.item_current_week
-import shiguangschedule.shared.generated.resources.item_first_day_of_week
 import shiguangschedule.shared.generated.resources.item_more_options
 import shiguangschedule.shared.generated.resources.item_personalization
 import shiguangschedule.shared.generated.resources.item_quick_actions
@@ -150,7 +154,6 @@ fun SettingsScreen(
             val showWeekends = courseTableConfig?.showWeekends ?: false
             val semesterStartDateString = courseTableConfig?.semesterStartDate
             val semesterTotalWeeks = courseTableConfig?.semesterTotalWeeks ?: 20
-            val firstDayOfWeekInt = courseTableConfig?.firstDayOfWeek ?: DayOfWeek.MONDAY.isoDayNumber
 
             val semesterStartDate: LocalDate? = remember(semesterStartDateString) {
                 semesterStartDateString?.let {
@@ -165,7 +168,6 @@ fun SettingsScreen(
             var showTotalWeeksDialog by remember { mutableStateOf(false) }
             var showManualWeekDialog by remember { mutableStateOf(false) }
             var showDatePickerModal by remember { mutableStateOf(false) }
-            var showFirstDayOfWeekDialog by remember { mutableStateOf(false) }
             var showLogoutConfirmDialog by remember { mutableStateOf(false) }
 
             LazyColumn(
@@ -189,6 +191,7 @@ fun SettingsScreen(
                                 onNeedLogin = { onNavigate(Destination.CqustLogin) }
                             )
                         },
+                        onCourseOverviewClick = { onNavigate(Destination.CourseManagementList) },
                         onLogoutClick = { showLogoutConfirmDialog = true }
                     )
                 }
@@ -200,13 +203,10 @@ fun SettingsScreen(
                         onShowWeekendsChanged = { isChecked -> viewModel.onShowWeekendsChanged(isChecked) },
                         semesterStartDate = semesterStartDate,
                         semesterTotalWeeks = semesterTotalWeeks,
-                        firstDayOfWeekInt = firstDayOfWeekInt,
                         displayCurrentWeek = displayCurrentWeek,
                         onSemesterStartDateClick = { showDatePickerModal = true },
                         onSemesterTotalWeeksClick = { showTotalWeeksDialog = true },
-                        onManualWeekClick = { showManualWeekDialog = true },
-                        onFirstDayOfWeekClick = { showFirstDayOfWeekDialog = true },
-                        onQuickActionsClick = { onNavigate(Destination.QuickActions) }
+                        onManualWeekClick = { showManualWeekDialog = true }
                     )
                 }
                 item {
@@ -224,8 +224,8 @@ fun SettingsScreen(
             if (showLogoutConfirmDialog) {
                 AlertDialog(
                     onDismissRequest = { showLogoutConfirmDialog = false },
-                    title = { Text("退出登录") },
-                    text = { Text("确定退出当前教务系统账号吗？") },
+                    title = { Text(stringResource(Res.string.dialog_title_logout)) },
+                    text = { Text(stringResource(Res.string.dialog_message_logout_confirm)) },
                     confirmButton = {
                         TextButton(
                             onClick = {
@@ -235,12 +235,12 @@ fun SettingsScreen(
                                 }
                             }
                         ) {
-                            Text("退出", color = MaterialTheme.colorScheme.error)
+                            Text(stringResource(Res.string.action_logout), color = MaterialTheme.colorScheme.error)
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { showLogoutConfirmDialog = false }) {
-                            Text("取消")
+                            Text(stringResource(Res.string.action_cancel))
                         }
                     }
                 )
@@ -279,17 +279,6 @@ fun SettingsScreen(
                     }
                 )
             }
-
-            if (showFirstDayOfWeekDialog) {
-                DayOfWeekPickerDialog(
-                    initialDayOfWeekInt = firstDayOfWeekInt,
-                    onDismiss = { showFirstDayOfWeekDialog = false },
-                    onConfirm = { selectedDayInt ->
-                        viewModel.onFirstDayOfWeekSelected(selectedDayInt)
-                        showFirstDayOfWeekDialog = false
-                    }
-                )
-            }
         }
     }
 }
@@ -305,13 +294,10 @@ private fun GeneralSettingsSection(
     onShowWeekendsChanged: (Boolean) -> Unit,
     semesterStartDate: LocalDate?,
     semesterTotalWeeks: Int,
-    firstDayOfWeekInt: Int,
     displayCurrentWeek: Int?,
     onSemesterStartDateClick: () -> Unit,
     onSemesterTotalWeeksClick: () -> Unit,
-    onManualWeekClick: () -> Unit,
-    onFirstDayOfWeekClick: () -> Unit,
-    onQuickActionsClick: () -> Unit
+    onManualWeekClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -387,28 +373,6 @@ private fun GeneralSettingsSection(
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
-
-            SettingItem(
-                title = stringResource(Res.string.item_first_day_of_week),
-                subtitle = stringResource(Res.string.desc_first_day_of_week),
-                onClick = onFirstDayOfWeekClick
-            ) {
-                val dayText = when (firstDayOfWeekInt) {
-                    DayOfWeek.MONDAY.isoDayNumber -> stringResource(Res.string.day_of_week_monday)
-                    DayOfWeek.SUNDAY.isoDayNumber -> stringResource(Res.string.day_of_week_sunday)
-                    else -> stringResource(Res.string.day_of_week_monday)
-                }
-                Text(
-                    text = dayText,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
-            SettingItem(
-                title = stringResource(Res.string.item_quick_actions),
-                subtitle = stringResource(Res.string.desc_quick_actions),
-                onClick = onQuickActionsClick
-            )
         }
     }
 }
@@ -437,18 +401,13 @@ private fun AdvancedSettingsSection(onNavigate: (Destination) -> Unit) {
                 onClick = { onNavigate(Destination.NotificationSettings) }
             )
             SettingItem(
-                title = stringResource(Res.string.item_course_management),
-                subtitle = stringResource(Res.string.desc_course_management),
-                onClick = { onNavigate(Destination.CourseManagementList) }
-            )
-            SettingItem(
                 title = stringResource(Res.string.item_personalization),
                 subtitle = stringResource(Res.string.desc_personalization),
                 onClick = { onNavigate(Destination.StyleSettings) }
             )
             SettingItem(
-                title = "课表导出",
-                subtitle = "导出为 JSON 或 ICS 日历文件",
+                title = stringResource(Res.string.item_course_conversion),
+                subtitle = stringResource(Res.string.desc_course_conversion),
                 onClick = { onNavigate(Destination.CourseTableConversion) }
             )
             SettingItem(
@@ -552,57 +511,6 @@ fun ManualWeekPickerDialog(
     )
 }
 
-/**
- * 每周起始日选择器对话框
- */
-@Composable
-fun DayOfWeekPickerDialog(
-    initialDayOfWeekInt: Int,
-    onDismiss: () -> Unit,
-    onConfirm: (Int) -> Unit
-) {
-    val dayOfWeekMondayText = stringResource(Res.string.day_of_week_monday)
-    val dayOfWeekSundayText = stringResource(Res.string.day_of_week_sunday)
-
-    val dayOptionsMap = mapOf(
-        dayOfWeekMondayText to DayOfWeek.MONDAY.isoDayNumber,
-        dayOfWeekSundayText to DayOfWeek.SUNDAY.isoDayNumber
-    )
-    val dayOptions = dayOptionsMap.keys.toList()
-
-    val initialSelectedDayText = dayOptionsMap.entries.firstOrNull { it.value == initialDayOfWeekInt }?.key
-        ?: dayOfWeekMondayText
-
-    var dialogSelectedText by remember { mutableStateOf(initialSelectedDayText) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(Res.string.dialog_title_set_first_day_of_week)) },
-        text = {
-            NativeNumberPicker(
-                values = dayOptions,
-                selectedValue = dialogSelectedText,
-                onValueChange = { newValue ->
-                    dialogSelectedText = newValue
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-        },
-        confirmButton = {
-            Button(onClick = {
-                val selectedDayInt = dayOptionsMap[dialogSelectedText] ?: DayOfWeek.MONDAY.isoDayNumber
-                onConfirm(selectedDayInt)
-            }) {
-                Text(stringResource(Res.string.action_confirm))
-            }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss) {
-                Text(stringResource(Res.string.action_cancel))
-            }
-        }
-    )
-}
 
 /**
  * 数字选择器对话框
@@ -644,7 +552,7 @@ private fun NumberPickerDialog(
 }
 
 /**
- * 重庆科技大学教务账号设置分组
+ * 教务账号设置卡片
  */
 @Composable
 private fun AccountSettingsSection(
@@ -652,6 +560,7 @@ private fun AccountSettingsSection(
     isLoggedIn: Boolean,
     isSyncing: Boolean,
     onSyncClick: () -> Unit,
+    onCourseOverviewClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
     val uriHandler = LocalUriHandler.current
@@ -665,72 +574,64 @@ private fun AccountSettingsSection(
             verticalArrangement = Arrangement.spacedBy(ITEM_SPACING)
         ) {
             Text(
-                text = "教务账号",
+                text = stringResource(Res.string.title_academic_account),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
 
-            // 当前学号及头像
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+            // 账号信息底座
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
             ) {
                 Row(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        modifier = Modifier.size(42.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = vectorResource(Res.drawable.person_24px),
-                                contentDescription = "学生头像",
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                    }
-
-                    Column {
+                    Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                         Text(
-                            text = "当前学号",
-                            style = MaterialTheme.typography.bodyLarge
+                            text = if (isLoggedIn && studentId.isNotEmpty()) studentId else stringResource(Res.string.status_not_logged_in),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
                         )
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = if (isLoggedIn && studentId.isNotEmpty()) studentId else "未登录",
-                            style = MaterialTheme.typography.bodyMedium,
+                            text = stringResource(Res.string.school_name),
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                }
 
-                if (isLoggedIn) {
-                    TextButton(
-                        onClick = onLogoutClick,
-                        enabled = !isSyncing
-                    ) {
-                        Text("退出", color = MaterialTheme.colorScheme.error)
-                    }
-                } else {
-                    TextButton(
-                        onClick = onSyncClick
-                    ) {
-                        Text("去登录", color = MaterialTheme.colorScheme.primary)
+                    if (isLoggedIn) {
+                        TextButton(
+                            onClick = onLogoutClick,
+                            enabled = !isSyncing
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.action_logout),
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    } else {
+                        TextButton(
+                            onClick = onSyncClick
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.action_login),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 }
             }
 
-            // 同步课表
             SettingItem(
-                title = "同步课表",
-                subtitle = "从重科教务系统更新课程",
+                title = stringResource(Res.string.item_sync_schedule),
+                subtitle = stringResource(Res.string.desc_sync_schedule),
                 onClick = if (isSyncing) null else onSyncClick,
                 trailingContent = {
                     if (isSyncing) {
@@ -750,10 +651,15 @@ private fun AccountSettingsSection(
                 }
             )
 
-            // 查看校历
             SettingItem(
-                title = "查看校历",
-                subtitle = "查看学校行课时间与放假安排",
+                title = stringResource(Res.string.item_course_management),
+                subtitle = stringResource(Res.string.desc_course_management),
+                onClick = onCourseOverviewClick
+            )
+
+            SettingItem(
+                title = stringResource(Res.string.item_school_calendar),
+                subtitle = stringResource(Res.string.desc_school_calendar),
                 onClick = {
                     uriHandler.openUri("https://www.cqust.edu.cn/index/js/xl.htm")
                 }

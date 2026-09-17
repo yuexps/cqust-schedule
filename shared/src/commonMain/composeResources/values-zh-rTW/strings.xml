@@ -208,8 +208,8 @@
     <string name="item_schedule_tweak">課程調動</string>
     <string name="desc_schedule_tweak">一鍵將指定日期的所有課程調整到新日期</string>
     <string name="section_title_advanced_features">進階功能</string>
-    <string name="item_course_conversion">課表匯入/匯出</string>
-    <string name="desc_course_conversion">支援檔案、教務導入及同步功能</string>
+    <string name="item_course_conversion">課表匯出與同步</string>
+    <string name="desc_course_conversion">匯出 JSON/ICS 檔案與系統行事曆同步</string>
     <string name="desc_notification_settings">管理您的課程提醒通知</string>
     <string name="desc_manage_course_tables">管理多份課程表，可切換、刪除</string>
     <string name="item_time_slot_customization">自訂時間段</string>
@@ -238,8 +238,22 @@
     <string name="toast_delete_table_success">%1$s 已刪除</string>
     <string name="toast_delete_last_table_failed">不能刪除最後一個課表</string>
     <string name="a11y_current_table">目前課表</string>
-    <string name="item_course_management">課程管理</string>
-    <string name="desc_course_management">按名稱查看和編輯所有課程</string>
+    <string name="item_course_management">課程總覽</string>
+    <string name="desc_course_management">查看已同步課程及排課詳情</string>
+
+    <!-- 教務帳號 -->
+    <string name="title_academic_account">教務帳號</string>
+    <string name="label_student_id">學號</string>
+    <string name="school_name">重慶科技大學</string>
+    <string name="status_not_logged_in">未登入</string>
+    <string name="action_logout">登出</string>
+    <string name="action_login">前往登入</string>
+    <string name="dialog_title_logout">登出帳號</string>
+    <string name="dialog_message_logout_confirm">確定要登出目前教務帳號嗎？</string>
+    <string name="item_sync_schedule">同步課表</string>
+    <string name="desc_sync_schedule">從教務系統更新課程</string>
+    <string name="item_school_calendar">查看校曆</string>
+    <string name="desc_school_calendar">查看學校校曆安排</string>
 
     <!-- 課程管理 -->
     <string name="title_selected_items_count">已選擇 %1$d 項</string>
@@ -601,6 +615,50 @@
     <string name="schedule_type_exclusive">課表專屬</string>
     <string name="schedule_type_public">公共作息</string>
     <string name="schedule_type_combo">組合作息</string>
-    <string name="desc_schedule_management">支援公共作息與組合作息</string>
     <string name="action_apply_to_all_schemes">套用到所有方案</string>
+
+    <!-- 教務登入模組 -->
+    <string name="title_cqust_login">教務系統登入</string>
+    <string name="title_cqust_sync">教務系統課表同步</string>
+    <string name="label_password">密碼</string>
+    <string name="placeholder_student_id">請輸入學號</string>
+    <string name="placeholder_password">請輸入密碼</string>
+    <string name="a11y_hide_password">隱藏密碼</string>
+    <string name="a11y_show_password">顯示密碼</string>
+    <string name="action_logging_in">正在登入...</string>
+    <string name="text_login_tip_title">提示</string>
+    <string name="text_login_tip_content">請使用重慶科技大學統一身份認證學號與密碼，僅用於獲取本學期課表，資料完全保存在本設備</string>
+    <string name="toast_login_success">登入成功，已匯入 %1$d 門課程</string>
+    <string name="error_input_student_id">請輸入學號</string>
+    <string name="error_input_password">請輸入密碼</string>
+    <string name="error_login_default">登入失敗，請檢查帳號密碼或校園網絡</string>
+
+    <!-- 首次開學日期引導 -->
+    <string name="dialog_title_set_start_date">設定行課起始日期</string>
+    <string name="dialog_desc_set_start_date">請選擇本學期的行課起始日期（第 1 週週一），以便準確計算週次並展示課程安排。</string>
+    <string name="dialog_tip_check_calendar_prefix">提示：如不確定行課起始日期，您可查閱重慶科技大學</string>
+    <string name="dialog_tip_official_calendar">官網校曆</string>
+    <string name="dialog_tip_check_calendar_suffix">進行確認。</string>
+    <string name="action_select_start_date">選擇行課日期</string>
+    <string name="action_set_later">稍後設定</string>
+
+    <!-- 課表匯出與課程總覽 -->
+    <string name="title_course_export">課表匯出</string>
+    <string name="section_file_export">檔案匯出</string>
+    <string name="label_class_periods_count">%1$d 個排課時段</string>
+
+    <!-- 常用通知與設定 Toast -->
+    <string name="toast_no_saved_credentials">未檢測到已儲存的帳號密碼，請重新登入</string>
+    <string name="toast_sync_courses_success">課表已同步，共 %1$d 門課程</string>
+    <string name="toast_sync_courses_failed">同步失敗：%1$s</string>
+    <string name="item_qq_group">QQ 交流群</string>
+    <string name="toast_qq_copied">已複製群號 %1$s，請在 QQ 中搜尋新增</string>
+    <string name="action_login_and_import">登入並導入課表</string>
+    <string name="login_tip_after_sync_prefix">課表同步完成後，請前往設定配置</string>
+    <string name="label_semester_start_date">行課起始日期</string>
+    <string name="login_tip_check_calendar_middle">。如不確定具體日期，可查閱</string>
+    <string name="login_tip_official_calendar">重科官網校曆</string>
+    <string name="symbol_period">。</string>
+    <string name="login_tip_disclaimer_title">本 APP 為第三方課表查看工具，非學校官方發佈。</string>
+    <string name="login_tip_disclaimer_content">數據僅保存在當前裝置本地，保障隱私安全；本課表僅供參考，不保證即時準確，請以教務處通知為準！</string>
 </resources>

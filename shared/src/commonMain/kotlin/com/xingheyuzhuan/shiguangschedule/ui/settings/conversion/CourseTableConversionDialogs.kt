@@ -17,7 +17,6 @@ import shiguangschedule.shared.generated.resources.alarm_option_none
 import shiguangschedule.shared.generated.resources.alarm_option_on_time
 import shiguangschedule.shared.generated.resources.dialog_title_ics_export_settings
 import shiguangschedule.shared.generated.resources.dialog_title_select_export_table
-import shiguangschedule.shared.generated.resources.dialog_title_select_import_table
 import shiguangschedule.shared.generated.resources.label_select_alarm_time
 
 /**
@@ -121,23 +120,14 @@ fun IcsExportDialog(
 
 /**
  * 课表转换相关弹窗的统一管理中心组件。
- * 根据当前的 UI 状态（ConversionUiState）动态分发渲染导入或导出各类格式的对应弹窗。
+ * 根据当前的 UI 状态（ConversionUiState）动态分发渲染导出各类格式的对应弹窗。
  */
 @Composable
 fun ConversionDialogOverlay(
     uiState: ConversionUiState,
     onDismiss: () -> Unit,
-    onConfirmImport: (String) -> Unit,
     onConfirmExport: (String, Int?) -> Unit
 ) {
-    if (uiState.showImportTableDialog) {
-        CourseTablePickerDialog(
-            title = stringResource(Res.string.dialog_title_select_import_table),
-            onDismissRequest = onDismiss,
-            onTableSelected = { onConfirmImport(it.id) }
-        )
-    }
-
     if (uiState.showExportTableDialog) {
         when (uiState.exportType) {
             ExportType.JSON -> {

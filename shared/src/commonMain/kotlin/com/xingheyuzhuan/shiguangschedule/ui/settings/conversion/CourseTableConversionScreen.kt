@@ -42,7 +42,6 @@ import com.xingheyuzhuan.shiguangschedule.tool.FileManagerCallbacks
 import com.xingheyuzhuan.shiguangschedule.tool.rememberFileManager
 import com.xingheyuzhuan.shiguangschedule.ui.components.ShareDialog
 import kotlinx.coroutines.launch
-import okio.Buffer
 import okio.FileSystem
 import okio.SYSTEM
 import org.jetbrains.compose.resources.stringResource
@@ -54,26 +53,18 @@ import shiguangschedule.shared.generated.resources.a11y_back
 import shiguangschedule.shared.generated.resources.a11y_details
 import shiguangschedule.shared.generated.resources.arrow_back_24px
 import shiguangschedule.shared.generated.resources.chevron_right_24px
-import shiguangschedule.shared.generated.resources.desc_backup_restore
 import shiguangschedule.shared.generated.resources.desc_export_ics_with_alarm
 import shiguangschedule.shared.generated.resources.desc_export_json_with_config
-import shiguangschedule.shared.generated.resources.desc_import_json
-import shiguangschedule.shared.generated.resources.desc_sync_to_system_calendar
-import shiguangschedule.shared.generated.resources.item_backup_restore
 import shiguangschedule.shared.generated.resources.item_export_course_file
 import shiguangschedule.shared.generated.resources.item_export_ics_file
-import shiguangschedule.shared.generated.resources.item_import_course_file
-import shiguangschedule.shared.generated.resources.item_sync_to_system_calendar
-import shiguangschedule.shared.generated.resources.section_file_conversion
-import shiguangschedule.shared.generated.resources.section_sync
+import shiguangschedule.shared.generated.resources.section_file_export
 import shiguangschedule.shared.generated.resources.snackbar_file_save_canceled
-import shiguangschedule.shared.generated.resources.snackbar_file_selection_canceled
-import shiguangschedule.shared.generated.resources.title_conversion
+import shiguangschedule.shared.generated.resources.title_course_export
 import kotlin.time.Clock
 
 /**
- * 课表导入导出与转换设置主界面。
- * 整合了跨平台文件导入导出、系统日历同步等功能。
+ * 课表导出设置主界面。
+ * 提供跨平台课表文件导出（JSON 与 ICS 格式）。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,10 +78,7 @@ fun CourseTableConversionScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    val snackbarFileSelectionCanceled = stringResource(Res.string.snackbar_file_selection_canceled)
     val snackbarFileSaveCanceled = stringResource(Res.string.snackbar_file_save_canceled)
-
-    var pendingImportTableId by remember { mutableStateOf<String?>(null) }
 
     // 用于暂存导出的缓存路径和触发 ShareDialog 的路径状态
     var pendingShareFilePath by remember { mutableStateOf<String?>(null) }
@@ -99,16 +87,6 @@ fun CourseTableConversionScreen(
 
     val fileManager = rememberFileManager(
         callbacks = FileManagerCallbacks(
-            onFileImported = { bytes, _ ->
-                val tableId = pendingImportTableId
-                if (bytes != null && tableId != null) {
-                    val source = Buffer().write(bytes)
-                    viewModel.handleFileImport(tableId, source)
-                } else if (bytes == null) {
-                    coroutineScope.launch { snackbarHostState.showSnackbar(snackbarFileSelectionCanceled) }
-                }
-                pendingImportTableId = null
-            },
             onFileExported = { success ->
                 if (success) {
                     shareFilePath = pendingShareFilePath
@@ -123,13 +101,9 @@ fun CourseTableConversionScreen(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is ConversionEvent.LaunchImportFilePicker -> {
-                    pendingImportTableId = event.tableId
-                    fileManager.importFile(listOf("json"))
-                }
                 is ConversionEvent.LaunchExportFileCreator -> {
                     val timestamp = Clock.System.now().toEpochMilliseconds()
-                    val fileName = "shiguangschedule_$timestamp.json"
+                    val fileName = "cqust_schedule_$timestamp.json"
                     val bytes = event.jsonContent.encodeToByteArray()
 
                     val shareTempDir = appStorage.cacheDir / "share_temp"
@@ -144,7 +118,7 @@ fun CourseTableConversionScreen(
                 }
                 is ConversionEvent.LaunchExportIcsFileCreator -> {
                     val timestamp = Clock.System.now().toEpochMilliseconds()
-                    val fileName = "shiguangschedule_$timestamp.ics"
+                    val fileName = "cqust_schedule_$timestamp.ics"
                     val bytes = event.icsContent.encodeToByteArray()
                     val shareTempDir = appStorage.cacheDir / "share_temp"
                     val tempFilePath = shareTempDir / fileName
@@ -168,7 +142,7 @@ fun CourseTableConversionScreen(
         topBar = {
             Column {
                 TopAppBar(
-                    title = { Text("课表导出") },
+                    title = { Text(stringResource(Res.string.title_course_export)) },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
                             Icon(
@@ -198,7 +172,7 @@ fun CourseTableConversionScreen(
         ) {
             Spacer(Modifier.height(16.dp))
 
-            Text("文件导出", style = MaterialTheme.typography.titleLarge, modifier = Modifier.fillMaxWidth())
+            Text(stringResource(Res.string.section_file_export), style = MaterialTheme.typography.titleLarge, modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.height(8.dp))
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
@@ -227,7 +201,6 @@ fun CourseTableConversionScreen(
     ConversionDialogOverlay(
         uiState = uiState,
         onDismiss = { viewModel.dismissDialog() },
-        onConfirmImport = { viewModel.onImportTableSelected(it) },
         onConfirmExport = { id, mins -> viewModel.onExportTableSelected(id, mins) }
     )
 

@@ -51,6 +51,7 @@ import com.xingheyuzhuan.shiguangschedule.tool.UpdateStatus
 import com.xingheyuzhuan.shiguangschedule.ui.components.ToastManager
 import com.xingheyuzhuan.shiguangschedule.ui.settings.SettingsViewModel
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
@@ -69,6 +70,7 @@ import shiguangschedule.shared.generated.resources.item_contributors
 import shiguangschedule.shared.generated.resources.item_github_repo
 import shiguangschedule.shared.generated.resources.item_language_settings
 import shiguangschedule.shared.generated.resources.item_open_source_licenses
+import shiguangschedule.shared.generated.resources.item_qq_group
 import shiguangschedule.shared.generated.resources.item_start_screen_settings
 import shiguangschedule.shared.generated.resources.label_version_prefix
 import shiguangschedule.shared.generated.resources.language_24px
@@ -78,6 +80,7 @@ import shiguangschedule.shared.generated.resources.people_alt_24px
 import shiguangschedule.shared.generated.resources.school_24px
 import shiguangschedule.shared.generated.resources.theme_settings_title
 import shiguangschedule.shared.generated.resources.title_more_options
+import shiguangschedule.shared.generated.resources.toast_qq_copied
 import shiguangschedule.shared.generated.resources.update_24px
 
 private const val GITHUB_REPO_URL = "https://github.com/yuexps/cqust-schedule"
@@ -131,8 +134,8 @@ fun MoreOptionsScreen(
             } catch (_: Exception) {
                 coroutineScope.launch {
                     clipboard.setClipEntry(clipEntryOf(QQ_GROUP_NUMBER))
+                    ToastManager.show(getString(Res.string.toast_qq_copied, QQ_GROUP_NUMBER))
                 }
-                ToastManager.show("已复制群号 $QQ_GROUP_NUMBER，请在 QQ 中搜索添加")
             }
         }
     }
@@ -300,7 +303,7 @@ fun MoreOptionsScreen(
                     // QQ 交流群
                     SettingListItem(
                         icon = vectorResource(Res.drawable.groups_24px),
-                        title = "QQ 交流群",
+                        title = stringResource(Res.string.item_qq_group),
                         trailingContent = {
                             Text(
                                 text = QQ_GROUP_NUMBER,

@@ -32,14 +32,10 @@ import com.xingheyuzhuan.shiguangschedule.ui.settings.additional.MoreOptionsScre
 import com.xingheyuzhuan.shiguangschedule.ui.settings.additional.OpenSourceLicensesScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.contribution.ContributionScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.conversion.CourseTableConversionScreen
-import com.xingheyuzhuan.shiguangschedule.ui.settings.course.AddEditCourseScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.coursemanagement.CourseInstanceListScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.coursemanagement.CourseNameListScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.coursetables.ManageCourseTablesScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.notification.NotificationSettingsScreen
-import com.xingheyuzhuan.shiguangschedule.ui.settings.quickactions.QuickActionsScreen
-import com.xingheyuzhuan.shiguangschedule.ui.settings.quickactions.delete.QuickDeleteScreen
-import com.xingheyuzhuan.shiguangschedule.ui.settings.quickactions.tweaks.TweakScheduleScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.style.StyleSettingsScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.themesettings.ThemeSettingsScreen
 import com.xingheyuzhuan.shiguangschedule.ui.settings.time.ComboScheduleEditScreen
@@ -244,12 +240,9 @@ fun ScreenContent(
         Destination.NotificationSettings -> NotificationSettingsScreen(onBack)
         Destination.MoreOptions -> MoreOptionsScreen(onNavigate, onBack)
         Destination.OpenSourceLicenses -> OpenSourceLicensesScreen(onBack)
-        Destination.QuickActions -> QuickActionsScreen(onNavigate, onBack)
-        Destination.TweakSchedule -> TweakScheduleScreen(onBack)
         Destination.ContributionList -> ContributionScreen(onBack)
         Destination.CourseManagementList -> CourseNameListScreen(onNavigate, onBack)
         Destination.StyleSettings -> StyleSettingsScreen(onBack)
-        Destination.QuickDelete -> QuickDeleteScreen(onBack)
         Destination.ThemeSettings -> ThemeSettingsScreen(onBack)
         Destination.LanguageSettings -> LanguageSettingScreen(onBack)
         Destination.CqustLogin -> CqustLoginScreen(
@@ -281,11 +274,11 @@ fun ScreenContent(
             copyFromId = targetDest.copyFromId,
             onBack = onBack
         )
-        is Destination.AddEditCourse -> AddEditCourseScreen(
-            onBack, targetDest.courseId
-        )
+
         is Destination.CourseManagementDetail -> CourseInstanceListScreen(
-            targetDest.courseName, onBack, onNavigate
+            courseName = targetDest.courseName,
+            onNavigateBack = onBack,
+            onNavigate = onNavigate
         )
     }
 }
